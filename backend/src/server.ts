@@ -7,6 +7,7 @@ import participantsRouter from "./routes/participants.js";
 import teamsRouter from "./routes/teams.js";
 import mentorsRouter from "./routes/mentors.js";
 import profileRouter from "./routes/profile.js";
+import mapRouter from "./routes/map.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/participants", participantsRouter);
 app.use("/teams", teamsRouter);
 app.use("/mentors", mentorsRouter);
 app.use("/profile", profileRouter);
+app.use("/map", mapRouter);
 
 // Health check
 app.get("/health", (_req, res) => {

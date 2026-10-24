@@ -5,6 +5,8 @@ import RegisterPage from './pages/RegisterPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ProfilePage from './pages/ProfilePage';
 import TeamPage from './pages/TeamPage';
+import TeamMatchingMapPage from './pages/TeamMatchingMapPage';
+import MentorDiscoveryMapPage from './pages/MentorDiscoveryMapPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -34,7 +36,7 @@ function AppRoutes() {
         path="/map/teams"
         element={
           <PrivateRoute>
-            <div className="p-8 text-gray-700">Team Matching Map (coming soon)</div>
+            <TeamMatchingMapPage />
           </PrivateRoute>
         }
       />
@@ -42,7 +44,7 @@ function AppRoutes() {
         path="/map/mentors"
         element={
           <PrivateRoute>
-            <div className="p-8 text-gray-700">Mentor Discovery Map (coming soon)</div>
+            <MentorDiscoveryMapPage />
           </PrivateRoute>
         }
       />
