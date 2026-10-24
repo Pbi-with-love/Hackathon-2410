@@ -9,6 +9,7 @@ import mentorsRouter from "./routes/mentors.js";
 import profileRouter from "./routes/profile.js";
 import mapRouter from "./routes/map.js";
 import matchRouter from "./routes/matches.js";
+import suggestionsRouter from "./routes/matching.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/teams", teamsRouter);
 app.use("/mentors", mentorsRouter);
 app.use("/profile", profileRouter);
 app.use("/map", mapRouter);
+app.use("/suggestions", suggestionsRouter);
 
 // Health check
 app.get("/health", (_req, res) => {

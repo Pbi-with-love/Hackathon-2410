@@ -4,6 +4,7 @@ import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { apiFetch } from '../lib/api';
+import SuggestedTeams from '../components/SuggestedTeams.tsx';
 
 interface Captain {
   id: string;
@@ -142,11 +143,13 @@ export default function TeamMatchingMapPage() {
         {error && <span style={{ color: '#dc2626', marginLeft: 'auto' }}>Error: {error}</span>}
       </div>
 
-      {/* Full-screen map */}
+      {/* Map + suggestions panel */}
+      <div style={{ flex: 1, position: 'relative' }}>
+      <SuggestedTeams />
       <MapContainer
         center={TAMPERE_CENTER}
         zoom={15}
-        style={{ flex: 1 }}
+        style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -212,6 +215,7 @@ export default function TeamMatchingMapPage() {
           </Marker>
         ))}
       </MapContainer>
+      </div>
     </div>
   );
 }
