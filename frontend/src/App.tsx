@@ -7,6 +7,8 @@ import ProfilePage from './pages/ProfilePage';
 import TeamPage from './pages/TeamPage';
 import TeamMatchingMapPage from './pages/TeamMatchingMapPage';
 import MentorDiscoveryMapPage from './pages/MentorDiscoveryMapPage';
+import MatchesPage from './pages/MatchesPage.tsx';
+import MatchNotifications from './components/MatchNotifications.tsx';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -68,7 +70,7 @@ function AppRoutes() {
         path="/matches"
         element={
           <PrivateRoute>
-            <div className="p-8 text-gray-700">Matches (coming soon)</div>
+            <MatchesPage />
           </PrivateRoute>
         }
       />
@@ -80,6 +82,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AppRoutes />
+      <MatchNotifications />
     </AuthProvider>
   );
 }

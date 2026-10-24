@@ -31,6 +31,7 @@ app.use("/teams", teamsRouter);
 app.use("/mentors", mentorsRouter);
 app.use("/profile", profileRouter);
 app.use("/map", mapRouter);
+app.use("/match", matchRouter);
 app.use("/suggestions", suggestionsRouter);
 
 // Health check
