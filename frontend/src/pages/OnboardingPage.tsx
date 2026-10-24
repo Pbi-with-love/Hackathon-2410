@@ -3,25 +3,27 @@ import ProfileExtractor from '../components/ProfileExtractor';
 
 export default function OnboardingPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen py-12 px-4" style={{ background: 'var(--ground)' }}>
       <div className="max-w-2xl mx-auto">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Tell us about yourself</h1>
-          <p className="text-gray-600">
+        <div style={{ marginBottom: 32, textAlign: 'center' }}>
+          <div style={{ fontFamily: 'var(--px)', fontSize: 16, color: 'var(--accent)', letterSpacing: '.05em', marginBottom: 6 }}>0%</div>
+          <div style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>CONET</div>
+          <div className="screen-title">Setup profile</div>
+          <p style={{ fontFamily: 'var(--font)', fontSize: 14, color: 'var(--muted)' }}>
             Type a few lines and we'll build your profile automatically
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="card" style={{ padding: 32 }}>
           <ProfileExtractor />
         </div>
 
-        <div className="mt-6 text-center">
+        <div style={{ marginTop: 24, textAlign: 'center' }}>
           <Link
             to="/map/teams"
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--muted)', textDecoration: 'none' }}
           >
-            Skip for now →
+            Skip for now
           </Link>
         </div>
       </div>

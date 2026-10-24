@@ -27,65 +27,74 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign in</h1>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--ground)', padding: '24px 16px' }}>
+      {/* Logo */}
+      <div style={{ marginBottom: 32, textAlign: 'center' }}>
+        <div style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--primary)', letterSpacing: '.05em', marginBottom: 6 }}>JUNCTION</div>
+        <div style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--muted)' }}>Hervanta Campus</div>
+      </div>
+
+      <div style={{ width: '100%', maxWidth: 340 }}>
+        <div className="screen-title" style={{ marginBottom: 4 }}>SIGN IN</div>
+        <div className="screen-sub">Access the live campus map and find your team.</div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm">
+          <div style={{ background: 'var(--surface)', border: '1px solid #7a3a3a', color: '#f87171', fontFamily: 'var(--sans)', fontSize: 12, padding: '8px 12px', marginBottom: 16 }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <form onSubmit={(e) => void handleSubmit(e)}>
+          <label>
+            <span className="field-label">EMAIL</span>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="field-input"
               placeholder="you@example.com"
             />
-          </div>
+          </label>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <label>
+            <span className="field-label">PASSWORD</span>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="field-input"
               placeholder="••••••••"
             />
-          </div>
+          </label>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+          <label>
+            <span className="field-label">ROLE</span>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as UserRole)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="field-input"
+              style={{ cursor: 'pointer' }}
             >
               <option value="participant">Participant</option>
               <option value="mentor">Mentor</option>
             </select>
-          </div>
+          </label>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded font-medium text-sm hover:bg-blue-700 disabled:opacity-50"
+            className="pixel-btn primary"
+            style={{ width: '100%', padding: '10px', fontSize: 12, opacity: loading ? 0.5 : 1 }}
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'SIGNING IN...' : 'SIGN IN'}
           </button>
         </form>
 
-        <p className="mt-4 text-sm text-center text-gray-600">
+        <p style={{ marginTop: 20, fontSize: 12, textAlign: 'center', color: 'var(--muted)' }}>
           No account?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
+          <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'none' }}>
             Register
           </Link>
         </p>

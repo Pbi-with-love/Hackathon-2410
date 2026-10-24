@@ -55,73 +55,73 @@ export default function SuggestedTeams() {
   };
 
   return (
-    <div className="absolute top-4 right-4 w-80 z-[1000] bg-white rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.18)] overflow-hidden font-sans">
+    <div
+      className="absolute top-4 right-4 w-80 z-[1000] overflow-hidden"
+      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+    >
       {/* Header */}
       <div
-        className="flex items-center justify-between px-3.5 py-2.5 bg-blue-800 text-white cursor-pointer"
+        className="flex items-center justify-between px-3 py-2 cursor-pointer"
+        style={{ background: 'var(--raised)', borderBottom: '1px solid var(--border)' }}
         onClick={() => setCollapsed((c) => !c)}
       >
-        <span className="font-bold text-sm">Suggested for you</span>
-        <span className="text-xs">{collapsed ? '\u25BC' : '\u25B2'}</span>
+        <span style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--primary)' }}>Suggested for you</span>
+        <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--muted)' }}>{collapsed ? '▼' : '▲'}</span>
       </div>
 
       {/* Body */}
       {!collapsed && (
         <div className="max-h-[70vh] overflow-y-auto">
           {loading && (
-            <p className="p-3 text-sm text-gray-500">
+            <p style={{ padding: 12, fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--muted)' }}>
               Loading suggestions...
             </p>
           )}
           {error && (
-            <p className="p-3 text-sm text-red-600">
+            <p style={{ padding: 12, fontFamily: 'var(--sans)', fontSize: 12, color: '#f87171' }}>
               {error}
             </p>
           )}
           {!loading && !error && suggestions.length === 0 && (
-            <p className="p-3 text-sm text-gray-500">
+            <p style={{ padding: 12, fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--muted)' }}>
               No matching teams found yet.
             </p>
           )}
           {suggestions.map((s) => (
             <div
               key={s.teamId}
-              className="px-3.5 py-3 border-b border-gray-200"
+              style={{ padding: '10px 14px', borderBottom: '1px solid var(--border)' }}
             >
-              <div className="font-bold text-sm text-gray-900">
+              <div style={{ fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)', marginBottom: 4 }}>
                 {s.teamName}
               </div>
               {s.projectIdea && (
                 <div
-                  className="text-xs text-gray-500 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap"
+                  style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--muted)', marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                   title={s.projectIdea}
                 >
                   {s.projectIdea}
                 </div>
               )}
-              {/* Matched roles as green tags */}
-              <div className="flex flex-wrap gap-1 mt-1.5">
+              {/* Matched roles as skill tags */}
+              <div className="flex flex-wrap gap-1" style={{ marginBottom: 6 }}>
                 {s.neededRoles.map((role) => (
-                  <span
-                    key={role}
-                    className="bg-green-100 text-green-700 text-[0.7rem] px-2 py-0.5 rounded-full font-semibold"
-                  >
-                    {role}
-                  </span>
+                  <span key={role} className="skill-tag">{role}</span>
                 ))}
               </div>
               {/* Reasons */}
               {s.reasons.map((reason, i) => (
                 <div
                   key={i}
-                  className="text-xs text-gray-700 mt-1"
+                  style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--primary)', marginBottom: 2 }}
                 >
                   {reason}
                 </div>
               ))}
               <button
                 onClick={() => void handleRequestJoin(s.teamId)}
-                className="mt-2 w-full py-1.5 bg-blue-500 text-white rounded text-sm font-semibold hover:bg-blue-600"
+                className="pixel-btn primary"
+                style={{ marginTop: 8, width: '100%', padding: '6px', fontSize: 12 }}
               >
                 Request to Join
               </button>

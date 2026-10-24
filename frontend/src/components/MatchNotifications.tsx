@@ -90,27 +90,30 @@ export default function MatchNotifications() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="bg-white border border-gray-200 rounded-lg shadow-lg p-4"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: 16 }}
         >
-          <p className="text-sm font-medium text-gray-900 mb-3">{toast.message}</p>
+          <p style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text)', marginBottom: 12, lineHeight: 1.6 }}>{toast.message}</p>
           <div className="flex gap-2">
             <button
-              onClick={() => respond(toast.matchId, 'accept', toast.id)}
-              className="flex-1 bg-green-600 text-white text-sm py-1 px-3 rounded hover:bg-green-700"
+              onClick={() => void respond(toast.matchId, 'accept', toast.id)}
+              className="pixel-btn primary flex-1 cursor-pointer"
+              style={{ padding: '6px', fontSize: 12 }}
             >
               Accept
             </button>
             <button
-              onClick={() => respond(toast.matchId, 'decline', toast.id)}
-              className="flex-1 bg-gray-200 text-gray-700 text-sm py-1 px-3 rounded hover:bg-gray-300"
+              onClick={() => void respond(toast.matchId, 'decline', toast.id)}
+              className="pixel-btn flex-1 cursor-pointer"
+              style={{ padding: '6px', fontSize: 12 }}
             >
               Decline
             </button>
             <button
               onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-              className="text-gray-400 hover:text-gray-600 px-1"
+              className="pixel-btn cursor-pointer"
+              style={{ padding: '6px 8px', fontSize: 12 }}
             >
-              ✕
+              ×
             </button>
           </div>
         </div>

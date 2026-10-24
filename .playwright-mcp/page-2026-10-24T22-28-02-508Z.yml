@@ -1,0 +1,65 @@
+- generic [ref=f3e3]:
+  - navigation [ref=f3e4]:
+    - generic [ref=f3e5]:
+      - link "0% CONET" [ref=f3e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f3e7]: 0%
+        - generic [ref=f3e8]: CONET
+      - link "Home" [ref=f3e9] [cursor=pointer]:
+        - /url: /
+      - link "Find my match" [ref=f3e10] [cursor=pointer]:
+        - /url: /match
+      - link "Team map" [ref=f3e11] [cursor=pointer]:
+        - /url: /map/teams
+      - link "Mentor map" [ref=f3e12] [cursor=pointer]:
+        - /url: /map/mentors
+      - generic [ref=f3e13]:
+        - button "0 invitations" [ref=f3e14] [cursor=pointer]
+        - button "T Test" [ref=f3e19] [cursor=pointer]:
+          - generic [ref=f3e20]: T
+          - generic [ref=f3e21]: Test
+  - main [ref=f3e22]:
+    - generic [ref=f3e23]:
+      - generic [ref=f3e26]:
+        - heading "Nobody hacks alone." [level=1] [ref=f3e27]
+        - paragraph [ref=f3e28]: Arrive solo, find a team that fits, and the right mentor — all in one place.
+        - generic [ref=f3e29]:
+          - link "Find my team" [ref=f3e30] [cursor=pointer]:
+            - /url: /match
+          - link "Open the map" [ref=f3e31] [cursor=pointer]:
+            - /url: /map/teams
+      - generic [ref=f3e36]:
+        - generic [ref=f3e37]:
+          - generic [ref=f3e38]: Late starts
+          - paragraph [ref=f3e39]: Solo arrivals waste hours searching for a team — some never find one.
+        - generic [ref=f3e40]:
+          - generic [ref=f3e41]: Blind recruiting
+          - paragraph [ref=f3e42]: Teams recruit by chance, not by fit. Skill gaps stay unfilled.
+        - generic [ref=f3e43]:
+          - generic [ref=f3e44]: Hidden help
+          - paragraph [ref=f3e45]: Mentors are in the building but nobody knows where or who to ask.
+      - generic [ref=f3e47]:
+        - heading "How it works" [level=2] [ref=f3e48]
+        - generic [ref=f3e49]:
+          - generic [ref=f3e50]:
+            - generic [ref=f3e51]: Step 1
+            - generic [ref=f3e52]: Tell us in one sentence
+            - paragraph [ref=f3e53]: Describe your skills, interests and preferred role in plain language.
+          - generic [ref=f3e54]:
+            - generic [ref=f3e55]: Step 2
+            - generic [ref=f3e56]: Ranked matches with reasons
+            - paragraph [ref=f3e57]: See teams ranked by fit with a friendly explanation for each.
+          - generic [ref=f3e58]:
+            - generic [ref=f3e59]: Step 3
+            - generic [ref=f3e60]: Meet on the map
+            - paragraph [ref=f3e61]: Find your new team on the venue map and walk over.
+      - generic [ref=f3e64]:
+        - heading "Fair matching" [level=2] [ref=f3e65]
+        - paragraph [ref=f3e66]: Both sides agree before any match happens. Only best-fit teams get notified. Your location is shown by zone only — and hidden once you join.
+      - generic [ref=f3e68]:
+        - generic [ref=f3e69]:
+          - generic [ref=f3e70]: 8 teams recruiting
+          - generic [ref=f3e71]: 12 people looking
+          - generic [ref=f3e72]: 6 mentors available
+        - link "Find my team" [ref=f3e73] [cursor=pointer]:
+          - /url: /match

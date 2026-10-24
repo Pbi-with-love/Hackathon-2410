@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
-import campusMapUrl from '../assets/TampUni.png';
+import campusMapUrl from '../assets/campus-map.svg';
 import { HACKATHON_ZONES } from '../lib/mapConstants';
 
 const MAP_BASE_WIDTH = 1100;
@@ -46,8 +46,8 @@ export default function CampusMap({ children }: CampusMapProps) {
     const handler = (e: WheelEvent) => {
       e.preventDefault();
       const rect = el.getBoundingClientRect();
-      const cx = e.clientX - rect.left;
-      const cy = e.clientY - rect.top;
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
       const dir = e.deltaY > 0 ? -1 : 1;
 
       setZoom((prev) => {
@@ -141,9 +141,6 @@ export default function CampusMap({ children }: CampusMapProps) {
             alt="Tampere University Hervanta Campus"
             draggable={false}
             className="block w-full pointer-events-none"
-            style={{
-              filter: 'invert(1) brightness(0.22) sepia(0.45) contrast(1.4) saturate(0.5)',
-            }}
           />
 
           {/* Zone labels */}
@@ -225,16 +222,38 @@ export default function CampusMap({ children }: CampusMapProps) {
       <div className="absolute right-4 bottom-20 flex flex-col gap-1.5 z-10">
         <button
           onClick={() => zoomTo(1)}
-          className="w-10 h-10 flex items-center justify-center text-lg font-bold rounded cursor-pointer transition-opacity hover:opacity-80"
-          style={{ background: '#3a3530', color: '#c4b99a', border: '1px solid #5a5040' }}
+          className="flex items-center justify-center cursor-pointer"
+          style={{
+            width: 36, height: 36,
+            background: 'var(--surface)',
+            border: '2px solid var(--line)',
+            borderRadius: 0,
+            fontFamily: 'var(--px)',
+            fontSize: 12,
+            color: 'var(--fg)',
+            boxShadow: '2px 2px 0 var(--ink)',
+          }}
+          onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'translate(1px,1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'; }}
+          onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = '2px 2px 0 var(--ink)'; }}
           aria-label="Zoom in"
         >
           +
         </button>
         <button
           onClick={() => zoomTo(-1)}
-          className="w-10 h-10 flex items-center justify-center text-lg font-bold rounded cursor-pointer transition-opacity hover:opacity-80"
-          style={{ background: '#3a3530', color: '#c4b99a', border: '1px solid #5a5040' }}
+          className="flex items-center justify-center cursor-pointer"
+          style={{
+            width: 36, height: 36,
+            background: 'var(--surface)',
+            border: '2px solid var(--line)',
+            borderRadius: 0,
+            fontFamily: 'var(--px)',
+            fontSize: 12,
+            color: 'var(--fg)',
+            boxShadow: '2px 2px 0 var(--ink)',
+          }}
+          onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'translate(1px,1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'; }}
+          onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = '2px 2px 0 var(--ink)'; }}
           aria-label="Zoom out"
         >
           -
@@ -242,13 +261,19 @@ export default function CampusMap({ children }: CampusMapProps) {
       </div>
       <button
         onClick={recenter}
-        className="absolute right-4 bottom-6 w-10 h-10 flex items-center justify-center text-xs font-bold rounded cursor-pointer transition-opacity hover:opacity-80 z-10"
+        className="absolute right-4 bottom-6 flex items-center justify-center cursor-pointer z-10"
         style={{
-          background: '#3a3530',
-          color: '#c4b99a',
-          border: '1px solid #5a5040',
-          fontFamily: '"Courier New", monospace',
+          width: 36, height: 36,
+          background: 'var(--surface)',
+          border: '2px solid var(--line)',
+          borderRadius: 0,
+          fontFamily: 'var(--px)',
+          fontSize: 12,
+          color: 'var(--fg)',
+          boxShadow: '2px 2px 0 var(--ink)',
         }}
+        onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'translate(1px,1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'; }}
+        onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ''; (e.currentTarget as HTMLButtonElement).style.boxShadow = '2px 2px 0 var(--ink)'; }}
         aria-label="Center on me"
       >
         ME

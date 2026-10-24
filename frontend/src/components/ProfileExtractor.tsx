@@ -132,23 +132,22 @@ export default function ProfileExtractor() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Prompt input */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Your background
-        </label>
+        <span className="field-label">YOUR BACKGROUND</span>
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="field-input"
+          style={{ resize: 'none', marginBottom: 0 }}
           placeholder="Describe yourself in a few sentences, e.g. 'I'm a frontend dev with 3 years React experience, interested in sustainability tech, available all weekend'"
         />
       </div>
 
       {extractError && (
-        <div className="p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm">
+        <div style={{ background: 'var(--surface)', border: '1px solid #7a3a3a', color: '#f87171', fontFamily: 'var(--sans)', fontSize: 12, padding: '8px 12px' }}>
           {extractError}
         </div>
       )}
@@ -156,57 +155,60 @@ export default function ProfileExtractor() {
       <button
         onClick={() => void handleExtract()}
         disabled={loading || prompt.trim().length < 10}
-        className="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="pixel-btn primary"
+        style={{ padding: '10px 20px', fontSize: 12, opacity: loading || prompt.trim().length < 10 ? 0.5 : 1 }}
       >
         {loading ? 'Extracting...' : 'Extract Profile'}
       </button>
 
       {/* Disclaimer */}
-      <p className="text-xs text-gray-500 italic">
+      <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--muted)', fontStyle: 'italic' }}>
         AI-powered extraction (preview) — please review and edit before saving
       </p>
 
       {/* Extracted profile card */}
       {profile && (
-        <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm space-y-5">
-          <h2 className="text-lg font-semibold text-gray-800">Review your profile</h2>
+        <div className="card space-y-4">
+          <h2 style={{ fontFamily: 'var(--font)', fontSize: 14, color: 'var(--text)' }}>Review your profile</h2>
 
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <span className="field-label">NAME</span>
             <input
               type="text"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="field-input"
+              style={{ marginBottom: 0 }}
             />
           </div>
 
           {/* Bio */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+            <span className="field-label">BIO</span>
             <textarea
               value={editBio}
               onChange={(e) => setEditBio(e.target.value)}
               rows={3}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="field-input"
+              style={{ resize: 'none', marginBottom: 0 }}
             />
           </div>
 
           {/* Skills */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Skills{' '}
-              <span className="text-gray-400 font-normal text-xs">(name:level, comma-separated — level 1–5)</span>
-            </label>
+            <span className="field-label">
+              SKILLS{' '}
+              <span style={{ color: 'var(--faint)', fontFamily: 'var(--font)', fontSize: 12 }}>(name:level, comma-separated -- level 1-5)</span>
+            </span>
             <div className="mb-2 flex flex-wrap gap-2">
               {parseSkillsText(editSkillsText).map((s) => (
                 <span
                   key={s.name}
-                  className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full"
+                  className="skill-tag"
                 >
                   {s.name}
-                  <span className="bg-blue-200 text-blue-800 rounded-full px-1 text-[10px] font-bold">
+                  <span style={{ marginLeft: 4, fontFamily: 'var(--font)', fontSize: 12, fontWeight: 'bold' }}>
                     {s.level}
                   </span>
                 </span>
@@ -216,43 +218,45 @@ export default function ProfileExtractor() {
               type="text"
               value={editSkillsText}
               onChange={(e) => setEditSkillsText(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="field-input"
+              style={{ marginBottom: 0 }}
               placeholder="JavaScript:3, React:4, Node.js:2"
             />
           </div>
 
           {/* Roles */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Roles</label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <span className="field-label">ROLES</span>
+            <div className="flex flex-wrap gap-2">
               {ALL_ROLES.map((role) => (
-                <label
+                <button
                   key={role}
-                  className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none"
+                  type="button"
+                  onClick={() => toggleRole(role)}
+                  className="pixel-btn cursor-pointer"
+                  style={
+                    editRoles.includes(role)
+                      ? { background: 'var(--primary)', color: 'var(--ink)', borderColor: 'var(--primary)' }
+                      : {}
+                  }
                 >
-                  <input
-                    type="checkbox"
-                    checked={editRoles.includes(role)}
-                    onChange={() => toggleRole(role)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
                   {role}
-                </label>
+                </button>
               ))}
             </div>
           </div>
 
           {/* Interests */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Interests{' '}
-              <span className="text-gray-400 font-normal text-xs">(comma-separated)</span>
-            </label>
+            <span className="field-label">
+              INTERESTS{' '}
+              <span style={{ color: 'var(--faint)', fontFamily: 'var(--font)', fontSize: 12 }}>(comma-separated)</span>
+            </span>
             <div className="mb-2 flex flex-wrap gap-2">
               {parseInterestsText(editInterestsText).map((interest) => (
                 <span
                   key={interest}
-                  className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full"
+                  className="skill-tag"
                 >
                   {interest}
                 </span>
@@ -262,26 +266,28 @@ export default function ProfileExtractor() {
               type="text"
               value={editInterestsText}
               onChange={(e) => setEditInterestsText(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="field-input"
+              style={{ marginBottom: 0 }}
               placeholder="energy, sustainability, climate"
             />
           </div>
 
           {/* Feedback */}
           {saveError && (
-            <div className="p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm">
+            <div style={{ background: 'var(--surface)', border: '1px solid #7a3a3a', color: '#f87171', fontFamily: 'var(--sans)', fontSize: 12, padding: '8px 12px' }}>
               {saveError}
             </div>
           )}
           {saveSuccess && (
-            <div className="p-3 bg-green-50 border border-green-300 text-green-700 rounded text-sm">
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: '#4ade80', fontFamily: 'var(--sans)', fontSize: 12, padding: '8px 12px' }}>
               Profile saved successfully!
             </div>
           )}
 
           <button
             onClick={() => void handleSave()}
-            className="bg-green-600 text-white px-5 py-2 rounded-lg font-medium text-sm hover:bg-green-700 transition-colors"
+            className="pixel-btn primary"
+            style={{ padding: '10px 20px', fontSize: 12 }}
           >
             Save Profile
           </button>

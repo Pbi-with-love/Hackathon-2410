@@ -6,7 +6,32 @@
       "Bash(npm run:*)",
       "Bash(ls:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m ':*)"
+      "Bash(git commit -m ':*)",
+      "Bash(npm test:*)",
+      "Bash(python3:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx tsc:*)",
+      "Bash(gh pr:*)",
+      "Bash(git commit:*)",
+      "Bash(npx playwright:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_fill_form",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "Bash(curl -s http://localhost:8080/health)",
+      "Bash(gh issue:*)",
+      "Bash(wc -l /Users/camlynh/Documents/Anh_Tai/Hackathon-2310/backend/src/routes/*.ts)",
+      "Bash(grep -r \"POST\\\\|GET\\\\|PATCH\\\\|DELETE\" /Users/camlynh/Documents/Anh_Tai/Hackathon-2310/backend/src/routes/*.ts)",
+      "Bash(grep -h \"router\\\\.\\(get\\\\|post\\\\|patch\\\\|delete\\)\" /Users/camlynh/Documents/Anh_Tai/Hackathon-2310/backend/src/routes/*.ts)",
+      "Bash(grep -E \"\\\\.ts$|\\\\.tsx$\")",
+      "Bash(curl -s http://localhost:8080/map/teams)",
+      "Bash(curl -s http://localhost:8080/map/mentors)",
+      "Bash(curl:*)",
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "Bash(kill %1)",
+      "Bash(npx vite:*)",
+      "mcp__plugin_playwright_playwright__browser_close"
     ]
   }
 }

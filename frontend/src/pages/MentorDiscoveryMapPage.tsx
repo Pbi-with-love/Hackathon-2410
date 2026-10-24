@@ -1,9 +1,8 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { apiFetch } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
-import { geoToImagePercent, mentorStatusColor, mentorStatusLabel } from '../lib/mapConstants';
-import CampusMap from '../components/CampusMap';
-import HeroSection from '../components/HeroSection';
+import { mentorStatusColor, mentorStatusLabel } from '../lib/mapConstants';
+import CanvasMap, { type MapMarker } from '../components/CanvasMap';
 
 interface Mentor {
   id: string;
@@ -15,10 +14,15 @@ interface Mentor {
   lng: number;
 }
 
+type StatusFilter = 'all' | 'available' | 'busy' | 'away';
+
+const STATUSES: Mentor['status'][] = ['available', 'busy', 'away'];
+
 export default function MentorDiscoveryMapPage() {
   const { user } = useAuth();
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [keyword, setKeyword] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [updating, setUpdating] = useState(false);
   const [myStatus, setMyStatus] = useState<Mentor['status']>('available');
   const [statusMsg, setStatusMsg] = useState('');
@@ -91,137 +95,371 @@ export default function MentorDiscoveryMapPage() {
     } catch { setStatusMsg('Error updating status.'); }
   }, [user]);
 
+  const filteredMentors = useMemo(() => {
+    if (statusFilter === 'all') return mentors;
+    return mentors.filter((m) => m.status === statusFilter);
+  }, [mentors, statusFilter]);
+
   const statusCounts = useMemo(() => {
     const c = { available: 0, busy: 0, away: 0 };
     mentors.forEach((m) => c[m.status]++);
     return c;
   }, [mentors]);
 
-  return (
-    <div className="flex flex-col h-screen" style={{ background: '#1a1814' }}>
-      <HeroSection totalTeams={0} totalParticipants={0} totalMentors={mentors.length} />
+  const mentorMarkers: MapMarker[] = useMemo(() =>
+    filteredMentors.map(m => ({
+      id: m.id,
+      name: m.name,
+      lat: m.lat,
+      lng: m.lng,
+      role: 'Mentor',
+      type: 'mentor' as const,
+      status: m.status,
+    })),
+    [filteredMentors]
+  );
 
-      {/* Controls — dark themed */}
+  const handleMarkerClick = useCallback((marker: MapMarker) => {
+    const mentor = filteredMentors.find(m => m.id === marker.id);
+    if (mentor) setSelected(mentor);
+  }, [filteredMentors]);
+
+  const handleListClick = useCallback((mentor: Mentor) => {
+    setSelected(mentor);
+  }, []);
+
+  const isSelf = selected && user?.role === 'mentor' && selected.id === user.id;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: 'var(--bg)' }}>
+      {/* Top bar */}
       <div
-        className="flex flex-wrap items-center gap-3 px-4 py-2 flex-shrink-0"
-        style={{ background: '#242019', borderBottom: '1px solid #3a3530' }}
+        className="flex items-center gap-3 px-4 py-2 flex-shrink-0"
+        style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
       >
         <input
           type="text"
-          placeholder="Filter by expertise..."
+          placeholder="Describe your problem..."
           value={keyword}
           onChange={(e) => handleKeywordChange(e.target.value)}
-          className="flex-1 min-w-[180px] max-w-xs px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600"
-          style={{ background: '#1a1814', border: '1px solid #3a3530', color: '#c4b99a' }}
-          aria-label="Filter mentors by expertise"
+          className="flex-1 min-w-[180px] px-3 py-1.5"
+          style={{
+            background: 'var(--raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 0,
+            color: 'var(--text)',
+            fontFamily: 'var(--sans)',
+            fontSize: 14,
+            outline: 'none',
+          }}
+          onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = 'var(--primary)'; }}
+          onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = 'var(--border)'; }}
+          aria-label="Describe your problem to find mentors"
         />
 
-        {user?.role === 'mentor' && (
-          <>
+        {/* Status filter chips */}
+        <div className="flex items-center gap-1.5">
+          {(['all', ...STATUSES] as StatusFilter[]).map((s) => (
             <button
-              onClick={() => void handleUpdateLocation()}
-              disabled={updating}
-              className="px-4 py-1.5 text-sm rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-opacity cursor-pointer"
-              style={{ background: '#3a3530', color: '#c4b99a', border: '1px solid #5a5040' }}
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className="cursor-pointer"
+              style={{
+                background: statusFilter === s ? 'var(--active)' : 'var(--raised)',
+                border: statusFilter === s ? '1px solid var(--primary)' : '1px solid var(--border)',
+                color: statusFilter === s ? 'var(--primary)' : 'var(--muted)',
+                fontFamily: 'var(--meta)',
+                fontSize: 12,
+                fontWeight: 500,
+                padding: '5px 8px',
+                borderRadius: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
             >
-              {updating ? 'Updating...' : 'Update my location'}
-            </button>
-            <select
-              value={myStatus}
-              onChange={(e) => void handleStatusChange(e.target.value as Mentor['status'])}
-              className="px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 cursor-pointer"
-              style={{ background: '#1a1814', border: '1px solid #3a3530', color: '#c4b99a' }}
-              aria-label="Set my availability status"
-            >
-              <option value="available">Available</option>
-              <option value="busy">Busy</option>
-              <option value="away">Away</option>
-            </select>
-          </>
-        )}
-
-        {statusMsg && (
-          <span className={`text-xs font-medium ${statusMsg.includes('!') ? 'text-green-400' : 'text-red-400'}`}>
-            {statusMsg}
-          </span>
-        )}
-
-        {/* Legend */}
-        <div className="flex items-center gap-3 ml-auto text-xs" style={{ color: '#8a8070' }}>
-          {(['available', 'busy', 'away'] as const).map((s) => (
-            <span key={s} className="flex items-center gap-1.5">
-              <span className="inline-block w-3 h-3 rounded-full" style={{ background: mentorStatusColor(s) }} />
-              {mentorStatusLabel(s)}
-              {statusCounts[s] > 0 && (
-                <span className="rounded-full px-1.5 font-semibold" style={{ background: '#2a2520', color: '#c4b99a' }}>
-                  {statusCounts[s]}
-                </span>
+              {s !== 'all' && (
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    background: mentorStatusColor(s as Mentor['status']),
+                    display: 'inline-block',
+                    flexShrink: 0,
+                  }}
+                />
               )}
+              {s === 'all' ? 'All' : mentorStatusLabel(s as Mentor['status'])}
+            </button>
+          ))}
+        </div>
+
+        {/* Legend with counts */}
+        <div className="flex items-center gap-3 ml-auto" style={{ fontFamily: 'var(--meta)', fontSize: 11, fontVariantNumeric: 'tabular-nums', color: 'var(--muted)' }}>
+          {STATUSES.map((s) => (
+            <span key={s} className="flex items-center gap-1.5">
+              <span className="inline-block w-2.5 h-2.5" style={{ background: mentorStatusColor(s) }} />
+              {mentorStatusLabel(s)}
+              <span style={{ color: 'var(--text)' }}>{statusCounts[s]}</span>
             </span>
           ))}
         </div>
       </div>
 
-      {/* Map */}
-      <div className="flex-1 relative">
-        <CampusMap>
-          {mentors.map((mentor) => {
-            const pos = geoToImagePercent(mentor.lat, mentor.lng);
-            const color = mentorStatusColor(mentor.status);
-            return (
-              <div
-                key={mentor.id}
-                className="absolute cursor-pointer"
-                style={{ left: `${pos.left}%`, top: `${pos.top}%`, transform: 'translate(-50%, -50%)' }}
-                onClick={(e) => { e.stopPropagation(); setSelected(mentor); }}
-              >
-                <div
-                  className="w-4 h-4 rounded-full"
+      {/* Three-panel body */}
+      <div className="flex flex-1" style={{ minHeight: 0 }}>
+        {/* Left list panel */}
+        <div
+          className="flex-shrink-0 flex flex-col"
+          style={{
+            width: 320,
+            borderRight: '1px solid var(--border)',
+            background: 'var(--bg)',
+          }}
+        >
+          <div className="px-3 py-2 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+            <span style={{ fontFamily: 'var(--meta)', fontSize: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' as const, color: 'var(--text)' }}>
+              {filteredMentors.length} mentor{filteredMentors.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--active) var(--bg)' }}>
+            {filteredMentors.map((m) => {
+              const isActive = selected?.id === m.id;
+              const visibleExpertise = m.expertise.slice(0, 3);
+              const extraCount = m.expertise.length - 3;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => handleListClick(m)}
+                  className="w-full text-left cursor-pointer"
                   style={{
-                    background: color,
-                    border: '2px solid rgba(255,255,255,0.7)',
-                    boxShadow: `0 0 10px ${color}80`,
+                    display: 'block',
+                    padding: '12px 16px',
+                    background: isActive ? 'var(--raised)' : 'transparent',
+                    borderBottom: '1px solid var(--border)',
+                    borderLeft: isActive ? '3px solid var(--primary)' : '3px solid transparent',
+                    borderRight: 'none',
+                    borderTop: 'none',
+                    borderRadius: 0,
+                    outline: 'none',
                   }}
-                />
+                >
+                  <div style={{ fontFamily: 'var(--body)', fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 6 }}>
+                    {m.name}
+                  </div>
+                  {m.expertise.length > 0 && (
+                    <div className="flex flex-wrap gap-1" style={{ marginBottom: 6 }}>
+                      {visibleExpertise.map((e) => (
+                        <span
+                          key={e}
+                          style={{
+                            background: 'var(--active)',
+                            border: '1px solid var(--border)',
+                            fontFamily: 'var(--meta)',
+                            fontSize: 11,
+                            fontWeight: 500,
+                            letterSpacing: '0.02em',
+                            padding: '1px 5px',
+                            color: 'var(--muted)',
+                          }}
+                        >
+                          {e}
+                        </span>
+                      ))}
+                      {extraCount > 0 && (
+                        <span
+                          style={{
+                            fontFamily: 'var(--meta)',
+                            fontSize: 11,
+                            color: 'var(--muted)',
+                            padding: '1px 4px',
+                          }}
+                        >
+                          +{extraCount} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        background: mentorStatusColor(m.status),
+                        display: 'inline-block',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span style={{ fontFamily: 'var(--meta)', fontSize: 11, fontWeight: 500, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--muted)' }}>
+                      {mentorStatusLabel(m.status)}
+                    </span>
+                  </div>
+                  {m.experience && (
+                    <div
+                      style={{
+                        fontFamily: 'var(--body)',
+                        fontSize: 12,
+                        color: 'var(--muted)',
+                        marginTop: 4,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {m.experience}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+            {filteredMentors.length === 0 && (
+              <div className="p-4" style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--muted)' }}>
+                No mentors match your filters.
               </div>
-            );
-          })}
-        </CampusMap>
+            )}
+          </div>
+        </div>
 
-        {/* Detail card */}
+        {/* Center map panel */}
+        <div className="flex-1 relative" style={{ minHeight: 0 }}>
+          <CanvasMap
+            markers={mentorMarkers}
+            onMarkerClick={handleMarkerClick}
+            selectedId={selected?.id ?? null}
+          />
+        </div>
+
+        {/* Right detail drawer */}
         {selected && (
           <div
-            className="absolute left-4 bottom-4 z-20 rounded-lg shadow-xl max-w-xs"
-            style={{ background: '#242019', border: '1px solid #3a3530', color: '#c4b99a' }}
+            className="flex-shrink-0 flex flex-col overflow-y-auto"
+            style={{
+              width: 360,
+              background: 'var(--surface)',
+              borderLeft: '1px solid var(--border)',
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'var(--active) var(--surface)',
+            }}
           >
-            <div className="flex items-start justify-between p-3 pb-0">
-              <h3 className="font-bold text-sm" style={{ color: '#e8dcc8' }}>{selected.name}</h3>
+            {/* Close button */}
+            <div className="flex justify-end p-3 pb-0">
               <button
                 onClick={() => setSelected(null)}
-                className="text-xs cursor-pointer ml-2 opacity-60 hover:opacity-100"
-                style={{ color: '#c4b99a' }}
+                className="btn cursor-pointer"
+                style={{ padding: '4px 12px', fontSize: 13 }}
                 aria-label="Close details"
               >
                 x
               </button>
             </div>
-            <div className="p-3 pt-2 text-xs space-y-2">
-              <span
-                className="inline-block rounded-full px-2 py-0.5 text-white font-semibold"
-                style={{ background: mentorStatusColor(selected.status), fontSize: '10px' }}
-              >
-                {mentorStatusLabel(selected.status)}
-              </span>
+
+            <div className="p-4 pt-2 flex flex-col gap-4">
+              {/* Name */}
+              <h3 style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text)', margin: 0 }}>
+                {selected.name}
+              </h3>
+
+              {/* Status badge */}
+              <div>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: mentorStatusColor(selected.status),
+                    fontFamily: 'var(--font)',
+                    fontSize: 12,
+                    color: 'var(--ink)',
+                    padding: '3px 8px',
+                  }}
+                >
+                  {mentorStatusLabel(selected.status)}
+                </span>
+              </div>
+
+              {/* Expertise tags */}
               {selected.expertise.length > 0 ? (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1.5">
                   {selected.expertise.map((e) => (
-                    <span key={e} className="rounded-full px-2 py-0.5 font-semibold" style={{ background: '#2a2a4a', color: '#a5b4fc', fontSize: '10px' }}>{e}</span>
+                    <span key={e} className="skill-tag">{e}</span>
                   ))}
                 </div>
               ) : (
-                <p style={{ color: '#5a5040', fontStyle: 'italic' }}>No expertise listed</p>
+                <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--muted)', fontStyle: 'italic', margin: 0 }}>
+                  No expertise listed
+                </p>
               )}
-              {selected.experience && <p style={{ color: '#8a8070', lineHeight: 1.4 }}>{selected.experience}</p>}
+
+              {/* Experience */}
+              {selected.experience && (
+                <p style={{ fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>
+                  {selected.experience}
+                </p>
+              )}
+
+              {/* Best for line */}
+              {selected.expertise.length > 0 && (
+                <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--primary)', margin: 0 }}>
+                  Best for: {selected.expertise.join(', ').toLowerCase()} problems
+                </p>
+              )}
+
+              {/* Self-management controls for mentor viewing themselves */}
+              {isSelf && (
+                <div
+                  className="flex flex-col gap-3"
+                  style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}
+                >
+                  <label style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--primary)', display: 'block' }}>
+                    My status
+                  </label>
+                  <select
+                    value={myStatus}
+                    onChange={(e) => void handleStatusChange(e.target.value as Mentor['status'])}
+                    className="cursor-pointer"
+                    style={{
+                      width: '100%',
+                      background: 'var(--raised)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 0,
+                      color: 'var(--text)',
+                      fontFamily: 'var(--sans)',
+                      fontSize: 13,
+                      padding: '8px 10px',
+                      outline: 'none',
+                    }}
+                    aria-label="Set my availability status"
+                  >
+                    <option value="available">Available</option>
+                    <option value="busy">Busy</option>
+                    <option value="away">Away</option>
+                  </select>
+                  <button
+                    onClick={() => void handleUpdateLocation()}
+                    disabled={updating}
+                    className="btn w-full disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    style={{ padding: '8px 10px' }}
+                  >
+                    {updating ? 'Updating...' : 'Update my location'}
+                  </button>
+                  {statusMsg && (
+                    <span style={{ fontFamily: 'var(--sans)', fontSize: 12, color: statusMsg.includes('!') ? '#4ade80' : '#f87171' }}>
+                      {statusMsg}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Ask for help button */}
+              {!isSelf && (
+                <button
+                  onClick={() => alert(`Help request sent to ${selected.name}!`)}
+                  className="btn primary w-full cursor-pointer"
+                  style={{ padding: '12px 16px', fontSize: 13, marginTop: 8 }}
+                >
+                  Ask for help
+                </button>
+              )}
             </div>
           </div>
         )}

@@ -118,125 +118,176 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading profile…</p>
+      <div className="flex-1 flex items-center justify-center">
+        <p style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--muted)' }}>Loading profile...</p>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-500">{error ?? 'Profile not found'}</p>
+      <div className="flex-1 flex items-center justify-center">
+        <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: '#f87171' }}>{error ?? 'Profile not found'}</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h1>
-
-      <form onSubmit={(e) => void handleSave(e)} className="space-y-6">
-        {/* Basic info (read-only) */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-1">
-          <p className="text-sm text-gray-500">Name</p>
-          <p className="font-medium text-gray-900">{profile.name}</p>
-          <p className="text-sm text-gray-500 mt-2">Email</p>
-          <p className="font-medium text-gray-900">{profile.email}</p>
+    <div className="max-w-2xl mx-auto w-full px-4 py-8">
+        <div style={{ marginBottom: 24 }}>
+          <div className="screen-title">YOU</div>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--muted)' }}>{profile.name} · {profile.email}</div>
         </div>
 
-        {/* Bio */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-          <textarea
-            rows={4}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Tell others about yourself…"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Skills */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Skills <span className="text-gray-400 font-normal">(comma-separated)</span>
-          </label>
-          <input
-            type="text"
-            value={skillsInput}
-            onChange={(e) => setSkillsInput(e.target.value)}
-            placeholder="e.g. React, Python, Figma"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Interests */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Interests <span className="text-gray-400 font-normal">(comma-separated)</span>
-          </label>
-          <input
-            type="text"
-            value={interestsInput}
-            onChange={(e) => setInterestsInput(e.target.value)}
-            placeholder="e.g. AI, sustainability, fintech"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Roles */}
-        <div>
-          <p className="block text-sm font-medium text-gray-700 mb-2">Roles</p>
-          <div className="flex flex-wrap gap-2">
-            {ROLE_OPTIONS.map((role) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => toggleRole(role)}
-                className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                  selectedRoles.includes(role)
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                }`}
+        <form onSubmit={(e) => void handleSave(e)} className="space-y-4">
+          {/* Basic info (read-only) */}
+          <div className="card" style={{ marginBottom: 0 }}>
+            <div style={{ marginBottom: 8 }}>
+              <span className="field-label">NAME</span>
+              <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text)' }}>{profile.name}</p>
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <span className="field-label">EMAIL</span>
+              <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text)' }}>{profile.email}</p>
+            </div>
+            <div>
+              <span className="field-label">STATUS</span>
+              <span
+                style={{
+                  display: 'inline-block',
+                  fontFamily: 'var(--font)',
+                  fontSize: 12,
+                  padding: '3px 8px',
+                  background: status === 'looking' ? 'var(--primary)' : 'var(--raised)',
+                  color: status === 'looking' ? 'var(--ink)' : 'var(--text)',
+                  border: '1px solid var(--border)',
+                }}
               >
-                {role}
-              </button>
-            ))}
+                {status === 'looking' ? 'Looking for team' : 'In a team'}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as 'looking' | 'in_team')}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {/* Bio */}
+          <div className="card" style={{ marginBottom: 0 }}>
+            <label>
+              <span className="field-label">BIO</span>
+              <textarea
+                rows={4}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell others about yourself..."
+                className="field-input"
+                style={{ resize: 'none', marginBottom: 0 }}
+              />
+            </label>
+          </div>
+
+          {/* Skills */}
+          <div className="card" style={{ marginBottom: 0 }}>
+            <label>
+              <span className="field-label">SKILLS <span style={{ color: 'var(--muted)', fontFamily: 'var(--font)', fontSize: 12 }}>(comma-separated)</span></span>
+              <input
+                type="text"
+                value={skillsInput}
+                onChange={(e) => setSkillsInput(e.target.value)}
+                placeholder="e.g. React, Python, Figma"
+                className="field-input"
+                style={{ marginBottom: skillsInput.trim() ? 8 : 0 }}
+              />
+            </label>
+            {skillsInput.trim() && (
+              <div className="flex flex-wrap gap-1.5">
+                {skillsInput.split(',').map((s) => s.trim()).filter(Boolean).map((s) => (
+                  <span key={s} className="skill-tag">{s}</span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Interests */}
+          <div className="card" style={{ marginBottom: 0 }}>
+            <label>
+              <span className="field-label">INTERESTS <span style={{ color: 'var(--muted)', fontFamily: 'var(--font)', fontSize: 12 }}>(comma-separated)</span></span>
+              <input
+                type="text"
+                value={interestsInput}
+                onChange={(e) => setInterestsInput(e.target.value)}
+                placeholder="e.g. AI, sustainability, fintech"
+                className="field-input"
+                style={{ marginBottom: interestsInput.trim() ? 8 : 0 }}
+              />
+            </label>
+            {interestsInput.trim() && (
+              <div className="flex flex-wrap gap-1.5">
+                {interestsInput.split(',').map((s) => s.trim()).filter(Boolean).map((s) => (
+                  <span key={s} className="skill-tag">{s}</span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Roles */}
+          <div className="card" style={{ marginBottom: 0 }}>
+            <span className="field-label">ROLES</span>
+            <div className="flex flex-wrap gap-2">
+              {ROLE_OPTIONS.map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => toggleRole(role)}
+                  className="pixel-btn cursor-pointer"
+                  style={
+                    selectedRoles.includes(role)
+                      ? { background: 'var(--primary)', color: 'var(--ink)', borderColor: 'var(--primary)' }
+                      : {}
+                  }
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="card" style={{ marginBottom: 0 }}>
+            <label>
+              <span className="field-label">STATUS</span>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as 'looking' | 'in_team')}
+                className="field-input"
+                style={{ cursor: 'pointer', marginBottom: 0 }}
+              >
+                <option value="looking">Looking for a team</option>
+                <option value="in_team">In a team</option>
+              </select>
+            </label>
+          </div>
+
+          {/* Location */}
+          <div className="card" style={{ marginBottom: 0 }}>
+            <span className="field-label">LOCATION</span>
+            <LocationPicker lat={lat} lng={lng} onChange={(la, lo) => { setLat(la); setLng(lo); }} />
+          </div>
+
+          {/* Feedback */}
+          {error && (
+            <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: '#f87171' }}>{error}</p>
+          )}
+          {successMsg && (
+            <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: '#4ade80' }}>{successMsg}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="pixel-btn primary cursor-pointer"
+            style={{ width: '100%', padding: '10px', fontSize: 12, opacity: saving ? 0.5 : 1 }}
           >
-            <option value="looking">Looking for a team</option>
-            <option value="in_team">In a team</option>
-          </select>
-        </div>
-
-        {/* Location */}
-        <div>
-          <p className="block text-sm font-medium text-gray-700 mb-2">Location</p>
-          <LocationPicker lat={lat} lng={lng} onChange={(la, lo) => { setLat(la); setLng(lo); }} />
-        </div>
-
-        {/* Feedback */}
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {successMsg && <p className="text-sm text-green-600">{successMsg}</p>}
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-        >
-          {saving ? 'Saving…' : 'Save Profile'}
-        </button>
-      </form>
-    </div>
+            {saving ? 'SAVING...' : 'SAVE PROFILE'}
+          </button>
+        </form>
+      </div>
   );
 }

@@ -1,0 +1,110 @@
+- generic [ref=f1e23]:
+  - navigation [ref=f1e24]:
+    - generic [ref=f1e25]:
+      - link "0% CONET" [ref=f1e26] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f1e27]: 0%
+        - generic [ref=f1e28]: CONET
+      - link "Home" [ref=f1e29] [cursor=pointer]:
+        - /url: /
+      - link "Find my match" [ref=f1e30] [cursor=pointer]:
+        - /url: /match
+      - link "Team map" [ref=f1e31] [cursor=pointer]:
+        - /url: /map/teams
+      - link "Mentor map" [ref=f1e32] [cursor=pointer]:
+        - /url: /map/mentors
+      - generic [ref=f1e33]:
+        - button "0 invitations" [ref=f1e34] [cursor=pointer]
+        - button "T Test" [ref=f1e39] [cursor=pointer]:
+          - generic [ref=f1e40]: T
+          - generic [ref=f1e41]: Test
+  - generic [ref=f1e43]:
+    - generic [ref=f1e44]:
+      - textbox "Search teams or skills" [ref=f1e45]:
+        - /placeholder: Search team / skill...
+      - combobox "Filter by missing role" [ref=f1e46] [cursor=pointer]:
+        - option "Missing role" [selected]
+        - option "backend developer"
+        - option "data scientist"
+        - option "devops engineer"
+        - option "frontend developer"
+        - option "fullstack developer"
+        - option "ml engineer"
+        - option "mobile developer"
+        - option "product manager"
+        - option "ux designer"
+      - combobox "Filter by challenge" [ref=f1e47] [cursor=pointer]:
+        - option "Challenge" [selected]
+      - generic [ref=f1e48]: Team leads 8
+    - generic [ref=f1e51]:
+      - generic [ref=f1e52]:
+        - generic [ref=f1e53]: 8 teams recruiting
+        - generic [ref=f1e54]:
+          - button "SmartFlow Needs frontend developer ml engineer +1 Capt. Mikael Korhonen" [ref=f1e55] [cursor=pointer]:
+            - generic [ref=f1e56]: SmartFlow
+            - generic [ref=f1e57]:
+              - generic [ref=f1e58]: Needs
+              - generic [ref=f1e59]: frontend developer
+              - generic [ref=f1e60]: ml engineer
+              - generic [ref=f1e61]: "+1"
+            - generic [ref=f1e62]: Capt. Mikael Korhonen
+          - button "MindBridge Needs mobile developer ux designer +1 Capt. Juhani Niemi" [ref=f1e63] [cursor=pointer]:
+            - generic [ref=f1e64]: MindBridge
+            - generic [ref=f1e65]:
+              - generic [ref=f1e66]: Needs
+              - generic [ref=f1e67]: mobile developer
+              - generic [ref=f1e68]: ux designer
+              - generic [ref=f1e69]: "+1"
+            - generic [ref=f1e70]: Capt. Juhani Niemi
+          - button "GreenGrid Needs frontend developer backend developer +1 Capt. Sofia Leinonen" [ref=f1e71] [cursor=pointer]:
+            - generic [ref=f1e72]: GreenGrid
+            - generic [ref=f1e73]:
+              - generic [ref=f1e74]: Needs
+              - generic [ref=f1e75]: frontend developer
+              - generic [ref=f1e76]: backend developer
+              - generic [ref=f1e77]: "+1"
+            - generic [ref=f1e78]: Capt. Sofia Leinonen
+          - button "LearnLoop Needs ml engineer backend developer +1 Capt. Anna Salonen" [ref=f1e79] [cursor=pointer]:
+            - generic [ref=f1e80]: LearnLoop
+            - generic [ref=f1e81]:
+              - generic [ref=f1e82]: Needs
+              - generic [ref=f1e83]: ml engineer
+              - generic [ref=f1e84]: backend developer
+              - generic [ref=f1e85]: "+1"
+            - generic [ref=f1e86]: Capt. Anna Salonen
+          - button "PayLite Needs backend developer fullstack developer +1 Capt. Pekka Rantanen" [ref=f1e87] [cursor=pointer]:
+            - generic [ref=f1e88]: PayLite
+            - generic [ref=f1e89]:
+              - generic [ref=f1e90]: Needs
+              - generic [ref=f1e91]: backend developer
+              - generic [ref=f1e92]: fullstack developer
+              - generic [ref=f1e93]: "+1"
+            - generic [ref=f1e94]: Capt. Pekka Rantanen
+          - button "QuestCity Needs mobile developer frontend developer +1 Capt. Kaisa Mattila" [ref=f1e95] [cursor=pointer]:
+            - generic [ref=f1e96]: QuestCity
+            - generic [ref=f1e97]:
+              - generic [ref=f1e98]: Needs
+              - generic [ref=f1e99]: mobile developer
+              - generic [ref=f1e100]: frontend developer
+              - generic [ref=f1e101]: "+1"
+            - generic [ref=f1e102]: Capt. Kaisa Mattila
+          - button "CareBridge Needs fullstack developer ux designer +1 Capt. Niina Hämäläinen" [ref=f1e103] [cursor=pointer]:
+            - generic [ref=f1e104]: CareBridge
+            - generic [ref=f1e105]:
+              - generic [ref=f1e106]: Needs
+              - generic [ref=f1e107]: fullstack developer
+              - generic [ref=f1e108]: ux designer
+              - generic [ref=f1e109]: "+1"
+            - generic [ref=f1e110]: Capt. Niina Hämäläinen
+          - button "CarbonTrace Needs backend developer frontend developer +1 Capt. Harri Lehtinen" [ref=f1e111] [cursor=pointer]:
+            - generic [ref=f1e112]: CarbonTrace
+            - generic [ref=f1e113]:
+              - generic [ref=f1e114]: Needs
+              - generic [ref=f1e115]: backend developer
+              - generic [ref=f1e116]: frontend developer
+              - generic [ref=f1e117]: "+1"
+            - generic [ref=f1e118]: Capt. Harri Lehtinen
+      - generic [ref=f1e122]:
+        - button "Zoom in" [ref=f1e123] [cursor=pointer]: +
+        - button "Zoom out" [ref=f1e124] [cursor=pointer]: −
+        - button "Center" [ref=f1e125] [cursor=pointer]: ME

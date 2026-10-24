@@ -69,6 +69,21 @@ router.post('/', requireAuth, async (req: Request, res: Response): Promise<void>
   }
 });
 
+// GET /teams — returns teams where the current user is captain
+router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const captainId = req.user?.userId;
+  try {
+    const result = await query(
+      `SELECT id, name, captain_id, status FROM teams WHERE captain_id = $1`,
+      [captainId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('GET /teams error', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /teams/:id
 router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params as { id: string };

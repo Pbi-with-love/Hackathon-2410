@@ -189,75 +189,87 @@ export default function TeamPage() {
   // --- Create Team Form ---
   if (isNew) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Create a Team</h1>
-        <form onSubmit={(e) => void handleCreate(e)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Team Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={createName}
-              onChange={(e) => setCreateName(e.target.value)}
-              placeholder="e.g. The Innovators"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Project Idea</label>
-            <textarea
-              rows={3}
-              value={createProjectIdea}
-              onChange={(e) => setCreateProjectIdea(e.target.value)}
-              placeholder="Describe your project idea…"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Goals</label>
-            <textarea
-              rows={3}
-              value={createGoals}
-              onChange={(e) => setCreateGoals(e.target.value)}
-              placeholder="What do you want to achieve?"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <p className="block text-sm font-medium text-gray-700 mb-2">Needed Roles</p>
-            <div className="flex flex-wrap gap-2">
-              {ROLE_OPTIONS.map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => toggleCreateRole(role)}
-                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                    createNeededRoles.includes(role)
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                  }`}
-                >
-                  {role}
-                </button>
-              ))}
+      <div className="min-h-screen flex flex-col" style={{ background: 'var(--ground)' }}>
+        {/* nav handled by shell */}
+        <div className="max-w-2xl mx-auto w-full px-4 py-8">
+          <div className="screen-title" style={{ marginBottom: 20 }}>CREATE TEAM</div>
+          <form onSubmit={(e) => void handleCreate(e)} className="space-y-4">
+            <div className="card" style={{ marginBottom: 0 }}>
+              <label>
+                <span className="field-label">TEAM NAME <span style={{ color: '#f87171' }}>*</span></span>
+                <input
+                  type="text"
+                  required
+                  value={createName}
+                  onChange={(e) => setCreateName(e.target.value)}
+                  placeholder="e.g. The Innovators"
+                  className="field-input"
+                  style={{ marginBottom: 0 }}
+                />
+              </label>
             </div>
-          </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+            <div className="card" style={{ marginBottom: 0 }}>
+              <label>
+                <span className="field-label">PROJECT IDEA</span>
+                <textarea
+                  rows={3}
+                  value={createProjectIdea}
+                  onChange={(e) => setCreateProjectIdea(e.target.value)}
+                  placeholder="Describe your project idea..."
+                  className="field-input"
+                  style={{ resize: 'none', marginBottom: 0 }}
+                />
+              </label>
+            </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
-            {saving ? 'Creating…' : 'Create Team'}
-          </button>
-        </form>
+            <div className="card" style={{ marginBottom: 0 }}>
+              <label>
+                <span className="field-label">GOALS</span>
+                <textarea
+                  rows={3}
+                  value={createGoals}
+                  onChange={(e) => setCreateGoals(e.target.value)}
+                  placeholder="What do you want to achieve?"
+                  className="field-input"
+                  style={{ resize: 'none', marginBottom: 0 }}
+                />
+              </label>
+            </div>
+
+            <div className="card" style={{ marginBottom: 0 }}>
+              <span className="field-label">NEEDED ROLES</span>
+              <div className="flex flex-wrap gap-2">
+                {ROLE_OPTIONS.map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => toggleCreateRole(role)}
+                    className="pixel-btn cursor-pointer"
+                    style={
+                      createNeededRoles.includes(role)
+                        ? { background: 'var(--primary)', color: 'var(--ink)', borderColor: 'var(--primary)' }
+                        : {}
+                    }
+                  >
+                    {role}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {error && <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: '#f87171' }}>{error}</p>}
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="pixel-btn primary cursor-pointer"
+              style={{ width: '100%', padding: '10px', fontSize: 12, opacity: saving ? 0.5 : 1 }}
+            >
+              {saving ? 'CREATING...' : 'CREATE TEAM'}
+            </button>
+          </form>
+        </div>
       </div>
     );
   }
@@ -265,16 +277,22 @@ export default function TeamPage() {
   // --- Loading / Error states ---
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-500">Loading team…</p>
+      <div className="min-h-screen flex flex-col" style={{ background: 'var(--ground)' }}>
+        {/* nav handled by shell */}
+        <div className="flex-1 flex items-center justify-center">
+          <p style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--muted)' }}>Loading team...</p>
+        </div>
       </div>
     );
   }
 
   if (!team) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-500">{error ?? 'Team not found'}</p>
+      <div className="min-h-screen flex flex-col" style={{ background: 'var(--ground)' }}>
+        {/* nav handled by shell */}
+        <div className="flex-1 flex items-center justify-center">
+          <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: '#f87171' }}>{error ?? 'Team not found'}</p>
+        </div>
       </div>
     );
   }
@@ -283,185 +301,200 @@ export default function TeamPage() {
 
   // --- Team Detail View ---
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{team.name}</h1>
-        <span
-          className={`px-3 py-1 rounded-full text-sm font-medium ${
-            team.status === 'open'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-gray-100 text-gray-600'
-          }`}
-        >
-          {team.status === 'open' ? 'Open for recruitment' : 'Closed'}
-        </span>
-      </div>
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--ground)' }}>
+      {/* nav handled by shell */}
 
-      {/* Team info (read-only when not captain) */}
-      {!isCaptain && (
-        <div className="space-y-4 mb-8">
-          {team.project_idea && (
+      <div className="max-w-2xl mx-auto w-full px-4 py-8">
+        <div className="flex items-center justify-between" style={{ marginBottom: 24 }}>
+          <div className="screen-title" style={{ marginBottom: 0 }}>{team.name}</div>
+          <span
+            style={{
+              fontFamily: 'var(--font)',
+              fontSize: 12,
+              padding: '4px 10px',
+              background: team.status === 'open' ? 'var(--primary)' : 'var(--raised)',
+              color: team.status === 'open' ? 'var(--ink)' : 'var(--muted)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            {team.status === 'open' ? 'Open' : 'Closed'}
+          </span>
+        </div>
+
+        {/* Team info (read-only when not captain) */}
+        {!isCaptain && (
+          <div className="card" style={{ marginBottom: 16 }}>
+            {team.project_idea && (
+              <div style={{ marginBottom: 12 }}>
+                <span className="field-label">PROJECT IDEA</span>
+                <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text)' }}>{team.project_idea}</p>
+              </div>
+            )}
+            {team.goals && (
+              <div style={{ marginBottom: 12 }}>
+                <span className="field-label">GOALS</span>
+                <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text)' }}>{team.goals}</p>
+              </div>
+            )}
+            {team.needed_roles.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <span className="field-label">NEEDED ROLES</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {team.needed_roles.map((r) => (
+                    <span key={r} className="skill-tag">{r}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
-              <p className="text-sm font-medium text-gray-500">Project Idea</p>
-              <p className="text-gray-900">{team.project_idea}</p>
+              <span className="field-label">CAPTAIN</span>
+              <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--text)' }}>{team.captain_name ?? 'Unknown'}</p>
             </div>
-          )}
-          {team.goals && (
-            <div>
-              <p className="text-sm font-medium text-gray-500">Goals</p>
-              <p className="text-gray-900">{team.goals}</p>
+          </div>
+        )}
+
+        {/* Edit form — captain only */}
+        {isCaptain && (
+          <form onSubmit={(e) => void handleUpdate(e)} className="space-y-4" style={{ marginBottom: 16 }}>
+            <div className="card" style={{ marginBottom: 0 }}>
+              <label>
+                <span className="field-label">TEAM NAME</span>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="field-input"
+                  style={{ marginBottom: 0 }}
+                />
+              </label>
             </div>
-          )}
-          {team.needed_roles.length > 0 && (
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Needed Roles</p>
+
+            <div className="card" style={{ marginBottom: 0 }}>
+              <label>
+                <span className="field-label">PROJECT IDEA</span>
+                <textarea
+                  rows={3}
+                  value={editProjectIdea}
+                  onChange={(e) => setEditProjectIdea(e.target.value)}
+                  className="field-input"
+                  style={{ resize: 'none', marginBottom: 0 }}
+                />
+              </label>
+            </div>
+
+            <div className="card" style={{ marginBottom: 0 }}>
+              <label>
+                <span className="field-label">GOALS</span>
+                <textarea
+                  rows={3}
+                  value={editGoals}
+                  onChange={(e) => setEditGoals(e.target.value)}
+                  className="field-input"
+                  style={{ resize: 'none', marginBottom: 0 }}
+                />
+              </label>
+            </div>
+
+            <div className="card" style={{ marginBottom: 0 }}>
+              <span className="field-label">NEEDED ROLES</span>
               <div className="flex flex-wrap gap-2">
-                {team.needed_roles.map((r) => (
-                  <span key={r} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-sm">
-                    {r}
-                  </span>
+                {ROLE_OPTIONS.map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => toggleEditRole(role)}
+                    className="pixel-btn cursor-pointer"
+                    style={
+                      editNeededRoles.includes(role)
+                        ? { background: 'var(--primary)', color: 'var(--ink)', borderColor: 'var(--primary)' }
+                        : {}
+                    }
+                  >
+                    {role}
+                  </button>
                 ))}
               </div>
             </div>
-          )}
-          <div>
-            <p className="text-sm font-medium text-gray-500">Captain</p>
-            <p className="text-gray-900">{team.captain_name ?? 'Unknown'}</p>
-          </div>
-        </div>
-      )}
 
-      {/* Edit form — captain only */}
-      {isCaptain && (
-        <form onSubmit={(e) => void handleUpdate(e)} className="space-y-6 mb-8">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Team Name</label>
-            <input
-              type="text"
-              required
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Project Idea</label>
-            <textarea
-              rows={3}
-              value={editProjectIdea}
-              onChange={(e) => setEditProjectIdea(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Goals</label>
-            <textarea
-              rows={3}
-              value={editGoals}
-              onChange={(e) => setEditGoals(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <p className="block text-sm font-medium text-gray-700 mb-2">Needed Roles</p>
-            <div className="flex flex-wrap gap-2">
-              {ROLE_OPTIONS.map((role) => (
+            {/* Recruitment toggle */}
+            <div className="card" style={{ marginBottom: 0 }}>
+              <span className="field-label">RECRUITMENT STATUS</span>
+              <div className="flex gap-2">
                 <button
-                  key={role}
                   type="button"
-                  onClick={() => toggleEditRole(role)}
-                  className={`px-3 py-1 rounded-full text-sm border transition-colors ${
-                    editNeededRoles.includes(role)
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                  }`}
+                  onClick={() => setEditStatus('open')}
+                  className="pixel-btn cursor-pointer"
+                  style={editStatus === 'open' ? { background: 'var(--primary)', color: 'var(--ink)', borderColor: 'var(--primary)' } : {}}
                 >
-                  {role}
+                  Open
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setEditStatus('closed')}
+                  className="pixel-btn cursor-pointer"
+                  style={editStatus === 'closed' ? { background: 'var(--primary)', color: 'var(--ink)', borderColor: 'var(--primary)' } : {}}
+                >
+                  Closed
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Recruitment toggle */}
-          <div>
-            <p className="block text-sm font-medium text-gray-700 mb-2">Recruitment Status</p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setEditStatus('open')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                  editStatus === 'open'
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-green-400'
-                }`}
-              >
-                Open
-              </button>
-              <button
-                type="button"
-                onClick={() => setEditStatus('closed')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                  editStatus === 'closed'
-                    ? 'bg-gray-600 text-white border-gray-600'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
-                }`}
-              >
-                Closed
-              </button>
+            {/* Location */}
+            <div className="card" style={{ marginBottom: 0 }}>
+              <span className="field-label">TEAM LOCATION</span>
+              <LocationPicker lat={lat} lng={lng} onChange={(la, lo) => { setLat(la); setLng(lo); }} />
             </div>
-          </div>
 
-          {/* Location */}
-          <div>
-            <p className="block text-sm font-medium text-gray-700 mb-2">Team Location</p>
-            <LocationPicker lat={lat} lng={lng} onChange={(la, lo) => { setLat(la); setLng(lo); }} />
-          </div>
+            {error && <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: '#f87171' }}>{error}</p>}
+            {successMsg && <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: '#4ade80' }}>{successMsg}</p>}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {successMsg && <p className="text-sm text-green-600">{successMsg}</p>}
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
-            {saving ? 'Saving…' : 'Save Changes'}
-          </button>
-        </form>
-      )}
-
-      {/* Members list */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">
-          Members ({members.length})
-        </h2>
-        {members.length === 0 ? (
-          <p className="text-gray-500 text-sm">No members yet.</p>
-        ) : (
-          <ul className="space-y-3">
-            {members.map((m) => (
-              <li key={m.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-sm">
-                  {m.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">
-                    {m.name}
-                    {m.id === team.captain_id && (
-                      <span className="ml-1 text-xs text-blue-600">(captain)</span>
-                    )}
-                  </p>
-                  {m.roles.length > 0 && (
-                    <p className="text-xs text-gray-500">{m.roles.join(', ')}</p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+            <button
+              type="submit"
+              disabled={saving}
+              className="pixel-btn primary cursor-pointer"
+              style={{ width: '100%', padding: '10px', fontSize: 12, opacity: saving ? 0.5 : 1 }}
+            >
+              {saving ? 'SAVING...' : 'SAVE CHANGES'}
+            </button>
+          </form>
         )}
+
+        {/* Members list */}
+        <div className="card">
+          <span className="field-label">MEMBERS ({members.length})</span>
+          {members.length === 0 ? (
+            <p style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--muted)' }}>No members yet.</p>
+          ) : (
+            <ul className="space-y-2">
+              {members.map((m) => (
+                <li
+                  key={m.id}
+                  className="flex items-center gap-3 p-3"
+                  style={{ background: 'var(--raised)', border: '1px solid var(--border)' }}
+                >
+                  <div
+                    className="w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0"
+                    style={{ background: 'var(--active)', color: 'var(--text)', fontFamily: 'var(--font)', fontSize: 14 }}
+                  >
+                    {m.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text)' }}>
+                      {m.name}
+                      {m.id === team.captain_id && (
+                        <span style={{ marginLeft: 6, fontFamily: 'var(--font)', fontSize: 12, color: 'var(--muted)' }}>(captain)</span>
+                      )}
+                    </p>
+                    {m.roles.length > 0 && (
+                      <p style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{m.roles.join(', ')}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
