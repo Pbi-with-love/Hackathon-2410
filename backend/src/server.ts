@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 
@@ -13,6 +14,9 @@ app.use(cors());
 
 // Parse JSON bodies
 app.use(express.json());
+
+// Auth routes
+app.use("/auth", authRouter);
 
 // Health check
 app.get("/health", (_req, res) => {
