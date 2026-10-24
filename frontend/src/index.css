@@ -1,2 +1,235 @@
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ── Fonts: 3 roles ── */
+  --display: 'Pixelify Sans', 'Courier New', monospace;   /* logo, H1, H2 only */
+  --body: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;  /* paragraphs, nav, UI */
+  --meta: 'IBM Plex Mono', 'Courier New', monospace;      /* labels, tags, stats, counts */
+
+  /* Legacy aliases (used in CanvasMap and some inline styles) */
+  --px: var(--display);
+  --font: var(--body);
+  --sans: var(--body);
+
+  /* ── Type scale: 12 / 14 / 16 / 20 / 28 / 40 / 56 ── */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+  --text-3xl: 56px;
+
+  /* ── Ground & surfaces ── dark app, elevation by lightness */
+  --ground: #0e0c0a;
+  --surface: #1a1714;
+  --raised: #24201a;
+  --active: #2e2920;
+
+  /* ── Borders ── 1px, one step above surface */
+  --border: #302b22;
+  --rule: #252017;
+  --control-border: #4a4030;
+
+  /* ── Text ── three tiers, all passing WCAG AA 4.5:1 */
+  --text: #f3e6c8;
+  --muted: #a89878;   /* 6.9:1 on --ground, 6.3:1 on --surface */
+  --faint: #7a6e58;
+
+  /* ── Accent & identity ── */
+  --accent: #e6b84a;
+  --you: #3d8bfd;
+  --ink: #0a0908;
+
+  /* ── Status ── */
+  --positive: #3fc07a;
+  --negative: #e5566f;
+
+  /* ── Spacing: 8px grid ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-24: 96px;
+
+  /* ── Layout ── */
+  --container: 1280px;
+  --gutter: 32px;
+  --gutter-narrow: 24px;  /* under 1024px */
+
+  /* ── Component tokens ── */
+  --panel-pad: 24px;
+  --gap: 16px;
+  --radius-card: 0px;
+  --radius-control: 0px;
+  --nav-height: 48px;
+  --control-height: 34px;
+  --row-height: 44px;
+
+  color-scheme: dark;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; padding: 0; }
+body {
+  background: var(--ground);
+  font-family: var(--body);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Container utility ── */
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+@media (max-width: 1024px) {
+  .container {
+    padding-left: var(--gutter-narrow);
+    padding-right: var(--gutter-narrow);
+  }
+}
+
+/* ── Typography primitives ── */
+.heading-display {
+  font-family: var(--display);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.heading-body {
+  font-family: var(--body);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.meta-label {
+  font-family: var(--meta);
+  font-weight: 500;
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Form labels ── */
+.field-label {
+  font-family: var(--meta);
+  font-weight: 500;
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ── Inputs ── */
+.field-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: var(--text-sm);
+  padding: 10px 12px;
+  outline: none;
+  margin-bottom: var(--gap);
+  border-radius: var(--radius-control);
+}
+.field-input:focus {
+  border-color: var(--accent);
+}
+
+/* ── Section headings ── */
+.screen-title {
+  font-family: var(--body);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: var(--sp-2);
+  letter-spacing: -0.01em;
+}
+.screen-sub {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  margin-bottom: var(--sp-6);
+  line-height: 1.55;
+}
+
+/* ── Buttons ── flat, no shadows at rest */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-height);
+  padding: 0 var(--sp-4);
+  font-family: var(--body);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  border-radius: var(--radius-control);
+  transition: background 0.1s, border-color 0.1s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--raised); border-color: var(--control-border); }
+.btn:active { background: var(--active); }
+.btn.primary {
+  background: var(--accent);
+  color: var(--ink);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.btn.primary:hover { background: #d4a63e; }
+
+/* Legacy alias */
+.pixel-btn { composes: btn; }
+.pixel-btn.primary { composes: btn primary; }
+
+/* ── Tags / chips ── mono meta */
+.skill-tag {
+  display: inline-block;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  font-family: var(--meta);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  color: var(--muted);
+  border-radius: var(--radius-control);
+  white-space: nowrap;
+}
+
+/* ── Cards ── 1px border, panel padding */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--panel-pad);
+}
+
+/* ── Tabular figures ── */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--meta);
+}
 
 @import "tailwindcss";

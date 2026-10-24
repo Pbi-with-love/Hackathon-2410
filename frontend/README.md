@@ -1,259 +1,228 @@
-# Junction Community Matchmaker — Project Overview
+# Junction Community Matchmaker -- Frontend
 
-> **Challenge:** Help every participant find the right people to build with.
-> **Goal:** People who arrive alone still find a team that fits, and anyone who gets stuck finds a mentor with the right expertise, with a short, friendly explanation for every suggestion.
-> **Evaluators:** Aditya Mittal & Jay Bhide (judging on Sunday)
+React 19 + TypeScript + Vite + Tailwind CSS
 
----
+## What we built
 
-## 1. Problem
+A real-time hackathon companion app for Junction at Tampere University. Participants find teams, teams find members, and everyone finds mentors -- all on a live campus map.
 
-- Teams often form late, and some participants never find their people.
-- Participants who need help (e.g. computer vision) don't know which mentor or peer has relevant experience.
+### Pages
 
-## 2. Required by the brief
-
-- [ ] Read participant profiles and suggest teammates/mentors.
-- [ ] Use **skills, interests, preferred roles, and availability** when matching.
-- [ ] Every suggestion includes a **short, friendly explanation**.
-- [ ] Participants can **accept / decline / request other matches**.
-
-## 3. Solution overview
-
-A web app with three core features:
-
-1. **Prompt-box matching (two-sided):** a participant describes themselves in a short prompt. The AI suggests fitting teams and, at the same time, notifies the teams that need someone like them most. A connection only happens when both sides agree.
-2. **Hybrid matching engine:** hybrid search (keyword + vector) retrieves candidates, then rule-based re-ranking scores roles, skills, and availability.
-3. **Venue map:** a floor plan of the venue showing mentors, open teams, and participants looking for a team, by zone/table and real-time status.
-
-### Core insight
-
-| Factor | Logic | Why |
-|---|---|---|
-| Interests, availability | **Similarity**: the closer, the better | Same challenge, same time on site |
-| Skills, roles | **Complementarity**: fill the gaps | A team with 3 backend devs needs a designer, not a 4th backend dev |
+| Route | Page | Purpose |
+|-------|------|---------|
+| `/login` | LoginPage | Hero landing with feature cards + sign-in form |
+| `/register` | RegisterPage | Account creation (participant or mentor) |
+| `/onboarding` | OnboardingPage | AI profile extraction from free-text prompt |
+| `/map/teams` | TeamMatchingMapPage | Canvas map with team + participant sprites |
+| `/map/mentors` | MentorDiscoveryMapPage | Canvas map with mentor sprites, expertise filter |
+| `/profile` | ProfilePage | Edit skills, roles, interests, location |
+| `/team/:id` | TeamPage | Create/manage team, toggle recruitment |
+| `/matches` | MatchesPage | Pending invitations, accept/decline |
 
 ---
 
-## 4. Tech stack
+## The Canvas Map
 
-| Layer | Technology |
-|---|---|
-| Frontend | ReactJS, TailwindCSS |
-| Backend | Node.js, TypeScript, Express |
-| Database / Auth / Realtime | Supabase (Postgres, Realtime, Auth) |
-| Vector search | `pgvector` (Supabase extension) |
-| Keyword search | Postgres full-text search (`tsvector`, `ts_rank`) |
-| LLM | Profile extraction, match explanations, icebreakers |
-| Embeddings | Embedding model for bios, interests, expertise |
+The centrepiece of the app. Instead of dropping pins on a tile-based map library, we render the entire Hervanta Campus as a **canvas-drawn map** with traced building geometry and pixel-art characters.
 
-> No need for Elasticsearch or a separate vector DB: Supabase handles both keyword and vector search.
+### Why canvas instead of Leaflet/Google Maps
 
----
+1. **No tiles, no network** -- the map works offline and loads instantly. There are no tile requests, no API keys, no rate limits.
+2. **Pixel-art style** -- the retro aesthetic is impossible with standard map libraries. Every building, road, and person is drawn pixel-by-pixel in the same visual language.
+3. **Full control** -- selection indicators, name tags, zone labels, and sprite animations are all part of one draw call. No DOM overlay juggling.
 
-## 5. User flows
+### How the map is drawn
 
-### 5.1 Participant looking for a team
-
-1. The participant types a prompt, e.g. *"I'm a frontend dev, mostly React, wanna build something for energy saving, here all weekend"*.
-2. The LLM extracts a **structured profile** (JSON), shown as a profile card the user can confirm or edit.
-3. The matching engine returns the **top 3–5 teams**, each with:
-   - A friendly explanation (based on the highest-scoring factors)
-   - Team balance radar chart, before vs. after adding you *(nice-to-have)*
-   - **Request to join / Decline / Show more** buttons
-4. The AI asks for consent: *"Want me to introduce you to the teams that fit you best?"*
-5. If yes, only the **best-matching teams** get notified (no broadcast to everyone).
-6. Once both sides agree, a chat opens with an AI-suggested **icebreaker**, and the map shows where the team/captain is.
-
-### 5.2 Team looking for members
-
-1. The captain sets the team to `open` and declares the **missing roles** (e.g. 1 designer, 1 ML).
-2. The team gets a pop-up when a fitting participant appears, written from the team's perspective:
-   > 🔔 Minh just joined: Frontend (React, 3 yrs), into the Energy challenge, here all weekend. **Minh fills exactly the Frontend gap your team is missing.** [Invite] [Skip]
-3. The team can browse participants who are `looking`, see their zone, and **message or invite** them.
-4. `closed` teams (full, or not looking) are filtered out of matching.
-
-### 5.3 Finding a mentor on the map
-
-1. The participant describes a problem, e.g. *"YOLO misdetects in low light"*.
-2. The system matches it against mentor expertise (hybrid search) and highlights 2–3 mentors on the map.
-3. Each mentor node shows: skills, experience, **status** (available / busy / away), and current **zone**.
-4. The mentor map is open to everyone, including `closed` teams.
-
----
-
-## 6. Matching engine
+The map component lives in `src/components/CanvasMap.tsx`. Every frame, it draws these layers in order:
 
 ```
-Profile (structured + embedding)
-   │
-   ▼
-[1] Hard filters
-    - team.status = open, team not full (≤ 5)
-    - availability overlap ≥ 50%
-   │
-   ▼
-[2] Hybrid search → top ~20 candidates
-    - keyword: Postgres full-text (ts_rank)
-    - semantic: pgvector cosine similarity
-    - merged with Reciprocal Rank Fusion (RRF)
-   │
-   ▼
-[3] Rule-based re-rank
-   │
-   ▼
-[4] Top 3–5 → LLM writes the explanation (only from computed factors, no hallucination)
+1. Background        #161210 solid fill
+2. Grid              20px lines in #1c1813
+3. Roads & parking   Traced polygons (GEO_G), filled #221d17, evenodd rule
+4. Building shadows  Same polygons as buildings, offset 3px right+down, filled #0a0908
+5. Buildings         Traced polygons (GEO_B), filled #2a241c, stroked #8a7a5a
+6. Street labels     "IBM Plex Sans" 10px in #5a4c3a (hidden when zoomed out)
+7. Building names    "Press Start 2P" 7px in #c8b890 at 60% opacity
+8. Zone tags         Pixel-font labels with hard-shadow borders
+9. People sprites    8x14 pixel characters, sorted by Y for depth
+10. Name tags        Labels above selected/visible sprites
 ```
 
-### Re-rank formula
+### Building geometry
+
+The campus buildings and roads were **traced from the real Tampere University Hervanta Campus map** as polygon coordinate arrays:
+
+- **`GEO_B`** -- 11 building polygons (Tietotalo, Noodi, Sahkotalo, Rakennustalo, Konetalo, Kampusareena, Main building, Festia, Tamppi Areena, Parking garage, Research facilities, Student sauna). Each polygon is an array of `[x, y]` coordinate pairs in a 1215x862 coordinate space.
+- **`GEO_G`** -- Road and parking area polygons. Filled with the `evenodd` fill rule to handle holes.
+
+Buildings are rendered with a three-pass technique:
+1. Shadow pass -- the same polygon translated 3px right and down, filled solid black
+2. Fill pass -- the polygon filled with the building color
+3. Stroke pass -- the polygon outlined
+
+### Zone system
+
+Seven named zones are placed at key campus locations:
+
+| Zone | Building | Purpose |
+|------|----------|---------|
+| Hacking hall | Kampusareena | Main hacking area |
+| Mentor corner | Main building | Where mentors sit |
+| Food | Festia | Cafeteria |
+| Main stage | Tamppi Areena | Presentations |
+| Hardware lab | Konetalo | Electronics/drones |
+| Quiet room | Tietotalo | Focus work |
+| Entrance | Outside | Arrival point |
+
+Each zone renders as a pixel-font label with a hard shadow, 2px border, and role-colored text. The label is always visible regardless of zoom level.
+
+---
+
+## Pixel-Art Character Sprites
+
+Every person on the map is drawn as an **8x14 pixel sprite** with 8 body parts:
 
 ```
-score = 0.30 × interest_similarity      (hybrid search score)
-      + 0.30 × role_gap_fill            (does the participant fill a missing role?)
-      + 0.20 × skill_coverage_gain      (how many new skills the team gains)
-      + 0.20 × availability_overlap     (% of overlapping time)
-      − penalty(duplicate roles, team almost full)
+..CCCC..    C = cap (role color)
+.CCCCCC.    c = cap brim (darker shade of role color)
+.cccccc.    H = hair (#3a2416)
+.HSSSSH.    S = skin (5 tones)
+.SESSES.    E = eyes (#15121a)
+..SSSS..    T = shirt (8 colors)
+..TTTT..    P = pants (6 colors)
+.TTTTTT.    B = shoes (#2a1b12)
+.STTTTS.
+..TTTT..
+..PPPP..
+..P..P..
+..P..P..
+.BB..BB.
 ```
 
-### Feedback loop
+### How role is communicated visually
 
-- Decline with a reason via quick chips: *not my challenge / role overlap / schedule mismatch*. The reason adjusts the weights for the next suggestions.
-- **Diversify** suggestions: don't return 5 near-identical teams.
+The **cap color** encodes the person's role:
 
----
+| Role | Cap color | Hex |
+|------|-----------|-----|
+| Developer | Blue | `#3d8bfd` |
+| Designer | Coral | `#e07a5f` |
+| Data / AI | Green | `#7bc67e` |
+| Business | Purple | `#c084fc` |
+| Mentor | Gold | `#e6b84a` |
 
-## 7. States & routing
+The cap brim is a 72% darkened shade of the cap color, giving depth. Shirt, pants, and skin colors are assigned pseudo-randomly per person for visual variety, while the cap stays tied to role so you can scan the map and instantly tell who does what.
 
-| Entity | State | Sees |
-|---|---|---|
-| Team | `open` | `looking` participants + zone + match suggestions |
-| Team | `closed` | Hidden from matching, can still use the mentor map |
-| Participant | `looking` | `open` teams + captain location + suggestions |
-| Participant | `in_team` | Location hidden, uses the app as a team member |
-| Mentor | `available` / `busy` / `away` | Shown on the map by status |
+### Sprite rendering
 
-### Match lifecycle
+Each sprite is drawn pixel-by-pixel using `ctx.fillRect` calls:
 
-```
-suggested → invited (team invites) / requested (participant asks to join)
-          → accepted | declined | expired
-```
-
-- A connection only happens when **both sides agree**.
-- When a participant joins a team, their other pending invites **auto-expire**, and those teams get replacement suggestions.
-- Never show a "you were rejected" notification.
-
----
-
-## 8. Map & location
-
-- **No GPS**: it isn't accurate indoors.
-- Use **zone/table check-in**: users pick their zone or **scan a QR code on each table**.
-- The map is a **floor plan image** of the venue; each node is placed at its zone's `(x, y)` coordinates.
-- Updates in real time via Supabase Realtime.
-
-### Privacy
-
-- A participant's location is shown only while `looking` **and** after they consent to share.
-- Shown by **zone**, not as an exact point.
-- Hidden automatically once the participant is `in_team`.
-
----
-
-## 9. Data model
-
-```sql
-participants (
-  id, name, bio,
-  skills jsonb,            -- [{ "name": "React", "level": 3 }]
-  roles text[],            -- preferred roles
-  interests text[],
-  availability jsonb,      -- on-site time slots
-  status,                  -- looking | in_team
-  zone_id, consent_share bool,
-  embedding vector, fts tsvector
-)
-
-teams (
-  id, name, captain_id, challenge,
-  needed_roles text[],
-  status,                  -- open | closed
-  zone_id,
-  embedding vector, fts tsvector
-)
-
-team_members (team_id, participant_id)
-
-mentors (
-  id, name, expertise text[], experience,
-  status,                  -- available | busy | away
-  zone_id,
-  embedding vector, fts tsvector
-)
-
-matches (
-  id, participant_id, team_id,
-  score, reasons jsonb,
-  direction,               -- team_to_participant | participant_to_team
-  state                    -- suggested | invited | requested | accepted | declined | expired
-)
-
-messages (id, match_id, sender_id, body, created_at)
-
-zones (id, label, x, y)    -- coordinates on the floor plan
+```typescript
+function drawSprite(ctx, x, y, px, palette) {
+  for (let r = 0; r < 14; r++) {
+    for (let c = 0; c < 8; c++) {
+      const key = SPRITE[r][c];      // "C", "S", "T", ".", etc.
+      if (key === ".") continue;      // transparent
+      ctx.fillStyle = palette[key];   // look up color
+      ctx.fillRect(x + c * px, y + r * px, px, px);
+    }
+  }
+}
 ```
 
-Supabase Realtime subscriptions on `matches` and `messages` power the pop-up notifications and chat.
+The `px` parameter controls the pixel size: **2px at normal zoom, 3px when zoomed in past 2.2x**. This keeps sprites readable at all zoom levels without anti-aliasing (`imageSmoothingEnabled = false`).
+
+A shadow rectangle is drawn under each sprite's feet for grounding.
+
+### Name tags
+
+When a sprite is selected or the map is zoomed in far enough, a **name tag** appears above their head:
+
+- Background: `#1c1814` (surface color)
+- Border: role color (2px when selected, 1px otherwise)
+- Font: Press Start 2P at 7px
+- Selected sprites show full name; others show first name only
+- Selected sprites get a bouncing pixel arrow indicator above the tag
+
+### Coordinate mapping
+
+The backend stores locations as `lat`/`lng` (real GPS coordinates near Tampere University). The `geoToMap()` function maps these to the 1215x862 canvas coordinate space:
+
+```typescript
+function geoToMap(lat, lng) {
+  const x = ((lng - LNG_MIN) / (LNG_MAX - LNG_MIN)) * 1215;
+  const y = ((LAT_MAX - lat) / (LAT_MAX - LAT_MIN)) * 862;
+  return { x, y };
+}
+```
 
 ---
 
-## 10. API (Express)
+## Interaction
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/profile/extract` | Prompt → LLM → profile JSON + embedding |
-| GET | `/match/teams/:participantId` | Team suggestions for a participant |
-| GET | `/match/participants/:teamId` | Participant suggestions for a team |
-| POST | `/match/:id/respond` | Accept / decline (with reason) |
-| POST | `/match/:id/invite` | Team invites a participant |
-| POST | `/mentor/search` | Question → top mentors |
-| POST | `/checkin` | Update zone (from QR) |
-| PATCH | `/team/:id/status` | Set team open / closed |
+### Pan and zoom
 
----
+- **Drag** to pan (pointer events with capture)
+- **Scroll wheel** to zoom toward screen center
+- **+/-/ME buttons** for zoom and re-center
+- View is clamped so the map can't be dragged off-screen
 
-## 11. Build order (cut from the bottom if time runs out)
+### Click to select
 
-| # | Item | Priority |
-|---|---|---|
-| 1 | Seed data: ~20 participants, 8 teams, 6 mentors, 10 zones | 🔴 Must |
-| 2 | Prompt → profile extraction → save + embedding | 🔴 Must |
-| 3 | Matching: hybrid search + re-rank + explanations + Accept/Decline/More | 🔴 Must (core of judging) |
-| 4 | Pop-up to top teams + Invite button (Realtime) | 🔴 Must (the wow moment) |
-| 5 | Venue map: floor plan + mentor/team nodes + zone check-in | 🟡 Should |
-| 6 | Mentor search by question | 🟡 Should |
-| 7 | Chat, radar chart, icebreaker | 🟢 Nice-to-have |
+Clicking the canvas finds the nearest marker within 30px and fires `onMarkerClick`. The parent page then shows a detail card with the person/team info and action buttons.
+
+### Search overlay
+
+A search box floats above the map. Typing filters the visible markers in real time. The search box uses the same pixel-art design language: square corners, 2px borders, hard shadow.
 
 ---
 
-## 12. Demo script (~3 minutes)
+## Design System
 
-1. **Problem** (20s): "Minh arrives at Junction alone and knows no one."
-2. **Prompt** (30s): Minh types a few lines about himself; a profile card appears.
-3. **Suggestions** (40s): 3 teams with explanations showing why they match (missing role, shared interest, overlapping time).
-4. **Two screens** (40s): Team Aurora's laptop gets a pop-up and clicks Invite; Minh accepts; the map shows the way to the team's table.
-5. **Mentor** (30s): the team gets stuck on computer vision, asks the system, and the map highlights an available mentor in zone B.
-6. **Close** (20s): two-sided, explainable, and respects user consent.
+The entire UI uses CSS custom properties from a single source:
+
+```css
+:root {
+  --bg:      #12100e;    /* page background */
+  --surface: #1c1814;    /* cards, panels */
+  --tile:    #2a241c;    /* input backgrounds, tags */
+  --fg:      #f3e6c8;    /* primary text */
+  --muted:   #a89878;    /* secondary text */
+  --primary: #e6b84a;    /* accent, active states, labels */
+  --you:     #3d8bfd;    /* "you" indicator */
+  --ink:     #0a0908;    /* shadows, deepest dark */
+  --line:    #5a4c3a;    /* borders */
+}
+```
+
+### Typography
+
+- **Press Start 2P** -- headings, labels, nav, buttons (6-14px). Gives the retro/pixel feel.
+- **IBM Plex Sans** -- body text, descriptions (12-14px). Clean and readable.
+
+### Visual rules
+
+- Square corners everywhere (border-radius: 0)
+- 2px solid borders on all interactive elements
+- Hard pixel shadows (2-3px offset, no blur)
+- Active/selected state: `background: var(--primary); color: var(--ink)`
+- Button press feedback: `transform: translate(1px, 1px); box-shadow: none`
+- No gradients, no glass effects, no smooth shadows
 
 ---
 
-## 13. Risks & mitigations
+## Running
 
-| Risk | Mitigation |
-|---|---|
-| Notification spam for teams | Only notify the top 3–5 best-matching teams |
-| LLM hallucinating reasons | LLM may only use facts from the computed scoring factors |
-| No real data to demo | Realistic seeded fake data |
-| Inaccurate indoor location | QR zone check-in instead of GPS |
-| Multiple simultaneous invites | Clear state machine, auto-expire once a team is joined |
-| Privacy concerns | Opt-in, zone-level display, hidden once in a team |
+```bash
+npm install
+npm run dev          # http://localhost:5173
+npm run build        # production build
+npm run lint         # ESLint
+npx vitest run       # 42 tests
+```
+
+## Tests
+
+- `src/components/HeroSection.test.tsx` -- NavBar rendering, links, stats
+- `src/components/SuggestedTeams.test.tsx` -- suggestion panel rendering
+- `src/lib/mapConstants.test.ts` -- coordinate mapping functions

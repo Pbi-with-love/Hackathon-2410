@@ -1,0 +1,26 @@
+- generic [ref=f2e3]:
+  - generic [ref=f2e4]:
+    - generic [ref=f2e5]: JUNCTION
+    - generic [ref=f2e6]: Hervanta Campus
+  - generic [ref=f2e7]:
+    - generic [ref=f2e8]: SIGN IN
+    - generic [ref=f2e9]: Access the live campus map and find your team.
+    - generic [ref=f2e10]:
+      - generic [ref=f2e11]:
+        - generic [ref=f2e12]: EMAIL
+        - textbox "EMAIL" [ref=f2e13]:
+          - /placeholder: you@example.com
+      - generic [ref=f2e14]:
+        - generic [ref=f2e15]: PASSWORD
+        - textbox "PASSWORD" [ref=f2e16]:
+          - /placeholder: ••••••••
+      - generic [ref=f2e17]:
+        - generic [ref=f2e18]: ROLE
+        - combobox "ROLE" [ref=f2e19] [cursor=pointer]:
+          - option "Participant" [selected]
+          - option "Mentor"
+      - button "SIGN IN" [ref=f2e20] [cursor=pointer]
+    - paragraph [ref=f2e21]:
+      - text: No account?
+      - link "Register" [ref=f2e22] [cursor=pointer]:
+        - /url: /register

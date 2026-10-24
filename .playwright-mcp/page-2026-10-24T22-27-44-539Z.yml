@@ -1,0 +1,48 @@
+- generic [ref=f2e3]:
+  - navigation [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - link "0% CONET" [ref=f2e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f2e7]: 0%
+        - generic [ref=f2e8]: CONET
+      - link "Home" [ref=f2e9] [cursor=pointer]:
+        - /url: /
+      - link "Find my match" [ref=f2e10] [cursor=pointer]:
+        - /url: /match
+      - link "Team map" [ref=f2e11] [cursor=pointer]:
+        - /url: /map/teams
+      - link "Mentor map" [ref=f2e12] [cursor=pointer]:
+        - /url: /map/mentors
+      - generic [ref=f2e13]:
+        - button "0 invitations" [ref=f2e14] [cursor=pointer]
+        - button "T Test" [ref=f2e19] [cursor=pointer]:
+          - generic [ref=f2e20]: T
+          - generic [ref=f2e21]: Test
+  - main [ref=f2e22]:
+    - generic [ref=f2e23]:
+      - generic [ref=f2e25]:
+        - button "> IMPORT CV / PROFILE" [ref=f2e26] [cursor=pointer]
+        - generic [ref=f2e27]: Upload a CV or paste a link
+      - generic [ref=f2e30]:
+        - generic [ref=f2e31]:
+          - generic [ref=f2e32]:
+            - generic [ref=f2e33]:
+              - generic [ref=f2e34]: AI MATCHMAKER
+              - generic [ref=f2e35]: Hi! Tell me your idea, the skills you bring, and the role you want to play.
+            - generic [ref=f2e36]:
+              - button "I'm a frontend dev looking for a sustainability project" [ref=f2e37]
+              - button "I want to build an AI-powered education tool" [ref=f2e38]
+              - button "I have experience in ML and want to join a health-tech team" [ref=f2e39]
+          - generic [ref=f2e40]:
+            - textbox "Tell me about yourself..." [ref=f2e41]
+            - button "SEND" [ref=f2e42]
+        - generic [ref=f2e43]:
+          - generic [ref=f2e44]:
+            - generic [ref=f2e45]:
+              - button "TEAMS" [ref=f2e46] [cursor=pointer]
+              - button "PEOPLE" [ref=f2e47] [cursor=pointer]
+            - combobox [ref=f2e48] [cursor=pointer]:
+              - option "Best fit" [selected]
+              - option "Newest"
+              - option "Most members"
+          - paragraph [ref=f2e54]: Tell the AI matchmaker about yourself to see ranked matches here.

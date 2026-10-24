@@ -1,0 +1,42 @@
+- generic [ref=f1e3]:
+  - navigation [ref=f1e4]:
+    - link "0% CONET" [ref=f1e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f1e6]: 0%
+      - generic [ref=f1e7]: CONET
+    - link "Home" [ref=f1e8] [cursor=pointer]:
+      - /url: /
+    - link "Find my match" [ref=f1e9] [cursor=pointer]:
+      - /url: /match
+    - link "Team map" [ref=f1e10] [cursor=pointer]:
+      - /url: /map/teams
+    - link "Mentor map" [ref=f1e11] [cursor=pointer]:
+      - /url: /map/mentors
+    - link "Sign in" [ref=f1e13] [cursor=pointer]:
+      - /url: /login
+  - main [ref=f1e14]:
+    - generic [ref=f1e15]:
+      - button "> IMPORT CV / PROFILE" [ref=f1e17] [cursor=pointer]
+      - generic [ref=f1e18]:
+        - generic [ref=f1e19]:
+          - generic [ref=f1e20]:
+            - generic [ref=f1e21]:
+              - generic [ref=f1e22]: AI MATCHMAKER
+              - generic [ref=f1e23]: Hi! Tell me your idea, the skills you bring, and the role you want to play.
+            - generic [ref=f1e24]:
+              - button "I'm a frontend dev looking for a sustainability project" [ref=f1e25] [cursor=pointer]
+              - button "I want to build an AI-powered education tool" [ref=f1e26] [cursor=pointer]
+              - button "I have experience in ML and want to join a health-tech team" [ref=f1e27] [cursor=pointer]
+          - generic [ref=f1e28]:
+            - textbox "Tell me about yourself..." [ref=f1e29]
+            - button "SEND" [ref=f1e30] [cursor=pointer]
+        - generic [ref=f1e31]:
+          - generic [ref=f1e32]:
+            - generic [ref=f1e33]:
+              - button "TEAMS 5" [ref=f1e34] [cursor=pointer]
+              - button "PEOPLE 12" [ref=f1e35] [cursor=pointer]
+            - combobox [ref=f1e36] [cursor=pointer]:
+              - option "Best fit" [selected]
+              - option "Newest"
+              - option "Most members"
+          - generic [ref=f1e37]: Tell the AI matchmaker about yourself in the chat, then click "Match me" to see results here.

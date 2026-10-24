@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>0%</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#12100e; --surface:#1c1814; --tile:#2a241c; --tile2:#3a3126;
+  --fg:#f3e6c8; --muted:#a89878; --primary:#e6b84a; --you:#3d8bfd;
+  --ink:#0a0908; --line:#5a4c3a;
+  --px:'Press Start 2P', 'Courier New', monospace;
+  --sans:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--ink);font-family:var(--sans);color:var(--fg);overscroll-behavior:none;overflow:hidden;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:100;background:var(--bg)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+#app{height:100%;display:flex;justify-content:center;background:var(--ink)}
+.phone{width:100%;max-width:430px;display:flex;flex-direction:column;background:var(--bg);position:relative;overflow:hidden}
+
+/* HEADER */
+.header{padding:max(calc(env(safe-area-inset-top,0px) + 10px),14px) 16px 10px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:2px solid var(--line);flex-shrink:0;position:relative;z-index:20}
+.logo{font-family:var(--px);font-size:13px;color:var(--primary);letter-spacing:.05em}
+.logo-sub{font-family:var(--px);font-size:9px;color:var(--muted);margin-top:4px}
+.header-right{display:flex;align-items:center;gap:8px}
+.status-chip{font-family:var(--px);font-size:7px;padding:5px 8px;border:2px solid var(--line);color:var(--muted)}
+.status-chip.visible{border-color:var(--you);color:var(--you)}
+.legend-btn{background:var(--surface);border:2px solid var(--line);color:var(--fg);font-family:var(--px);font-size:7px;padding:6px 10px;display:flex;align-items:center;gap:6px;box-shadow:2px 2px 0 var(--ink)}
+.legend-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.role-dots{display:flex;gap:3px}
+.role-dots i{width:6px;height:6px;display:block}
+.legend-popup{position:absolute;top:100%;right:16px;background:var(--surface);border:2px solid var(--line);box-shadow:4px 4px 0 var(--ink);z-index:200;min-width:210px;padding:12px}
+.legend-popup.hidden{display:none}
+.legend-title{font-family:var(--px);font-size:7px;color:var(--primary);margin-bottom:10px}
+.legend-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.legend-row canvas{width:10px;height:17.5px;image-rendering:pixelated;flex-shrink:0}
+.legend-label{font-size:11px}
+.legend-label-sub{font-size:9px;color:var(--muted);margin-left:auto}
+.legend-note{font-size:10px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:8px;margin-top:4px}
+
+/* MAIN + SCREENS */
+.main{flex:1;min-height:0;overflow:hidden;position:relative;background:var(--bg)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;padding:16px 16px 24px;background:var(--bg)}
+.screen.active{display:flex}
+#screen-map{padding:0;overflow:hidden;background:#161210}
+
+/* MAP */
+#map-viewport{position:relative;flex:1;min-height:0;overflow:hidden;background:#161210}
+#map{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#map.drag{cursor:grabbing}
+.map-controls{position:absolute;right:12px;bottom:60px;display:flex;flex-direction:column;gap:4px;z-index:25}
+.map-ctrl-btn{width:36px;height:36px;background:var(--surface);border:2px solid var(--line);color:var(--fg);font-family:var(--px);font-size:12px;box-shadow:2px 2px 0 var(--ink);display:flex;align-items:center;justify-content:center}
+.map-ctrl-btn:active{transform:translate(1px,1px);box-shadow:none}
+.map-hint{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:var(--surface);border-top:2px solid var(--line);font-size:10px;color:var(--muted);z-index:20;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hint-go-options{background:var(--tile);border:2px solid var(--line);color:var(--primary);font-family:var(--px);font-size:7px;padding:5px 8px;box-shadow:2px 2px 0 var(--ink);flex-shrink:0}
+
+/* NAV */
+.nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:2px solid var(--line);background:var(--surface);padding-bottom:max(env(safe-area-inset-bottom,0px),8px);flex-shrink:0}
+.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 4px;background:none;border:none;color:var(--muted);min-height:56px;font-family:var(--px);font-size:6px}
+.nav-btn.active{color:var(--primary)}
+.nav-btn svg{width:18px;height:18px}
+
+/* SHARED FORM STYLES */
+.screen-title{font-family:var(--px);font-size:14px;color:var(--fg);margin-bottom:4px}
+.screen-sub{font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.field-label{font-family:var(--px);font-size:8px;color:var(--primary);margin-bottom:8px;display:block}
+.field-input{width:100%;background:var(--surface);border:2px solid var(--line);color:var(--fg);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none;margin-bottom:16px;border-radius:0}
+.field-input:focus{border-color:var(--primary)}
+textarea.field-input{resize:none;line-height:1.5}
+.field-group{margin-bottom:16px}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.role-pick-btn{background:var(--surface);border:2px solid var(--line);color:var(--fg);font-family:var(--px);font-size:8px;padding:12px 8px;text-align:center;box-shadow:2px 2px 0 var(--ink);line-height:1.5;display:flex;align-items:center;justify-content:center;gap:8px}
+.role-pick-btn i{width:8px;height:8px;display:block;flex-shrink:0}
+.role-pick-btn.active{background:var(--primary);color:var(--ink);border-color:var(--primary)}
+.role-pick-btn:active,.skill-btn:active,.mode-btn:active,.theme-btn:active,.pcl-btn:active{transform:translate(1px,1px);box-shadow:none}
+.skills-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.skill-btn{background:var(--surface);border:2px solid var(--line);color:var(--fg);font-family:var(--px);font-size:8px;padding:8px 12px;box-shadow:2px 2px 0 var(--ink)}
+.skill-btn.active{background:var(--primary);color:var(--ink);border-color:var(--primary)}
+.saved-note{font-family:var(--px);font-size:7px;color:var(--muted);min-height:10px;text-align:right}
+
+/* AVATAR EDITOR */
+.avatar-box{background:var(--surface);border:2px solid var(--line);box-shadow:3px 3px 0 var(--ink);padding:12px;display:flex;gap:14px;margin-bottom:8px}
+.avatar-stage{width:96px;flex-shrink:0;align-self:flex-start;aspect-ratio:10/11;background:
+  repeating-linear-gradient(0deg,transparent 0 7px,#ffffff08 7px 8px),
+  repeating-linear-gradient(90deg,transparent 0 7px,#ffffff08 7px 8px),var(--tile);
+  border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
+.avatar-stage canvas{width:44px;height:77px;image-rendering:pixelated}
+.sw-label{font-family:var(--px);font-size:7px;color:var(--muted);margin:10px 0 6px}
+.sw-label:first-child{margin-top:0}
+.swatches{display:flex;flex-wrap:wrap;gap:5px}
+.sw{width:22px;height:22px;border:2px solid var(--line);box-shadow:2px 2px 0 var(--ink)}
+.sw.on{border-color:var(--fg);outline:2px solid var(--primary);outline-offset:1px}
+.cap-note{font-size:10px;color:var(--muted);line-height:1.5;margin-bottom:16px}
+
+/* SETTINGS */
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:12px}
+.setting-label{font-family:var(--px);font-size:8px;color:var(--fg)}
+.setting-desc{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+.toggle{width:44px;height:24px;background:var(--tile);border:2px solid var(--line);position:relative;flex-shrink:0}
+.toggle.on{background:var(--primary);border-color:var(--primary)}
+.toggle-knob{position:absolute;top:2px;left:2px;width:16px;height:16px;background:var(--fg);transition:left .15s}
+.toggle.on .toggle-knob{left:22px;background:var(--ink)}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.theme-btn{background:var(--surface);border:2px solid var(--line);font-family:var(--px);font-size:7px;padding:10px 4px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+.theme-btn.active{border-color:currentColor}
+.upload-box{border:2px dashed var(--line);padding:12px;font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+
+/* EVENT */
+.challenge-card,.person-card-list,.empty-state{background:var(--surface);border:2px solid var(--line);box-shadow:3px 3px 0 var(--ink);padding:12px;margin-bottom:10px}
+.challenge-host{font-family:var(--px);font-size:7px;color:var(--muted);margin-bottom:4px}
+.challenge-title{font-family:var(--px);font-size:9px;color:var(--primary);margin-bottom:8px;line-height:1.5}
+.challenge-text{font-size:12px;line-height:1.5;margin-bottom:6px}
+.challenge-prize{font-size:10px;color:var(--you)}
+.sched{display:grid;grid-template-columns:72px 1fr;gap:6px 10px;font-size:12px;line-height:1.4}
+.sched span:nth-child(odd){font-family:var(--px);font-size:7px;color:var(--primary);padding-top:3px}
+
+/* TEAM */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.mode-btn{background:var(--surface);border:2px solid var(--line);font-family:var(--px);font-size:7px;padding:12px 8px;text-align:center;box-shadow:2px 2px 0 var(--ink);line-height:1.6}
+.mode-btn.active{background:var(--primary);color:var(--ink);border-color:var(--primary)}
+.pcl-top{display:flex;gap:10px;align-items:flex-start}
+.pcl-top canvas{width:20px;height:35px;image-rendering:pixelated;flex-shrink:0;cursor:pointer}
+.pcl-info{flex:1;min-width:0}
+.pcl-name{font-family:var(--px);font-size:10px;margin-bottom:5px;cursor:pointer;line-height:1.4}
+.pcl-role{font-family:var(--px);font-size:7px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.pcl-pct{font-family:var(--px);font-size:9px;color:var(--primary);flex-shrink:0}
+.pcl-text{font-size:12px;line-height:1.5;margin-bottom:6px}
+.pcl-why{font-size:11px;color:var(--primary);margin-bottom:8px;line-height:1.5}
+.pcl-footer{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pcl-btn{background:var(--tile);border:2px solid var(--line);font-family:var(--px);font-size:7px;padding:6px 10px;box-shadow:2px 2px 0 var(--ink)}
+.pcl-btn.primary{background:var(--primary);color:var(--ink);border-color:var(--primary)}
+.pcl-sent{font-family:var(--px);font-size:7px;color:var(--you)}
+.card-skills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.skill-tag{background:var(--tile);border:1px solid var(--line);font-size:9px;padding:3px 7px;color:var(--muted);font-family:var(--px)}
+.empty-state{font-size:11px;color:var(--muted);line-height:1.6}
+.list-more{display:flex;gap:8px;justify-content:center;margin-top:4px}
+
+/* SEARCH */
+.map-search{position:absolute;top:10px;left:10px;right:10px;z-index:26}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:2px solid var(--line);box-shadow:2px 2px 0 var(--ink);padding:0 10px}
+.search-box:focus-within{border-color:var(--primary)}
+.search-box svg{width:12px;height:12px;fill:var(--muted);flex-shrink:0;shape-rendering:crispEdges}
+.search-box input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--fg);font-family:var(--sans);font-size:14px;padding:9px 0}
+.search-box input::-webkit-search-cancel-button{display:none}
+.search-box.solo{margin-bottom:12px}
+.search-clear{background:var(--tile);border:2px solid var(--line);font-family:var(--px);font-size:7px;padding:3px 6px}
+.search-results{margin-top:4px;background:var(--surface);border:2px solid var(--line);box-shadow:4px 4px 0 var(--ink);max-height:300px;overflow-y:auto}
+.sr-row{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;border-bottom:1px solid var(--line);padding:8px 10px;text-align:left}
+.sr-row:hover,.sr-row:focus-visible{background:var(--tile)}
+.sr-row canvas{width:12px;height:21px;image-rendering:pixelated;flex-shrink:0}
+.sr-txt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sr-name{font-family:var(--px);font-size:8px}
+.sr-why{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr-more{font-size:11px;color:var(--muted);padding:9px 10px}
+.pcl-found{font-family:var(--px);font-size:6px;color:var(--you);margin-bottom:6px;line-height:1.5}
+
+/* TEXT-FIRST TAGS */
+.field-input.tight{margin-bottom:8px}
+.tag-rows{display:flex;flex-direction:column;gap:6px}
+.tag-line{display:flex;flex-wrap:wrap;gap:6px}
+.tag-hint{font-family:var(--px);font-size:6px;color:var(--muted);margin-top:2px}
+.skill-btn.suggest{background:transparent;border-style:dashed;color:var(--muted);box-shadow:none;font-size:7px;padding:6px 9px}
+.skill-btn.suggest.hot{border-color:var(--primary);color:var(--primary)}
+.skill-btn.more{background:transparent;border-color:transparent;box-shadow:none;color:var(--primary);font-size:7px;padding:6px 4px}
+.skill-btn.active{font-size:7px;padding:6px 9px}
+.statusv{grid-column:span 2;font-family:var(--px);font-size:6px}
+
+/* PERSON CARD (collector-card style) */
+#sheet{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(10,9,8,.72)}
+#sheet.open{display:flex}
+.pcard{width:100%;max-width:330px;max-height:100%;overflow-y:auto;background:var(--surface);border:2px solid var(--line);box-shadow:4px 4px 0 var(--ink);position:relative}
+.pcard-band{height:6px;background:var(--rc)}
+.pcard-in{padding:12px}
+.pcard-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.pcard-no{font-family:var(--px);font-size:7px;color:var(--muted)}
+.pcard-badge{font-family:var(--px);font-size:7px;background:var(--rc);color:var(--ink);padding:4px 6px}
+.card-close{background:var(--tile);border:2px solid var(--line);font-family:var(--px);font-size:8px;padding:5px 8px;box-shadow:2px 2px 0 var(--ink)}
+.card-close:active{transform:translate(1px,1px);box-shadow:none}
+.pcard-art{position:relative;height:150px;border:2px solid var(--line);background:
+  linear-gradient(180deg,transparent 66%,rgba(0,0,0,.35) 66%),
+  repeating-linear-gradient(0deg,transparent 0 11px,#ffffff07 11px 12px),
+  repeating-linear-gradient(90deg,transparent 0 11px,#ffffff07 11px 12px),var(--tile);
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pcard-art canvas{width:52px;height:91px;image-rendering:pixelated;margin-top:14px}
+.pcard-zone{position:absolute;left:6px;top:6px;font-family:var(--px);font-size:6px;color:var(--fg);background:var(--surface);border:1px solid var(--line);padding:4px 5px}
+.pcard-num{position:absolute;right:8px;bottom:6px;font-family:var(--px);font-size:18px;color:rgba(255,255,255,.07)}
+.pcard-name{font-family:var(--px);font-size:11px;line-height:1.4;margin:12px 0 4px}
+.pcard-team{font-size:11px;color:var(--muted);margin-bottom:12px}
+.stats{display:grid;grid-template-columns:44px 1fr 30px;gap:6px 8px;align-items:center;font-family:var(--px);font-size:6px;color:var(--muted);margin-bottom:12px}
+.bar{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:8px}
+.bar i{background:var(--tile);border:1px solid var(--line)}
+.bar i.f{background:var(--rc);border-color:var(--rc)}
+.stats .v{text-align:right;color:var(--fg)}
+.spec{display:grid;grid-template-columns:70px 1fr;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-size:12px;line-height:1.4}
+.spec span:first-child{font-family:var(--px);font-size:6px;color:var(--muted);padding-top:3px}
+.whybox{margin:10px 0 12px;padding:8px 10px;background:var(--tile);border-left:3px solid var(--primary);font-size:11px;line-height:1.5}
+.whybox b{display:block;font-family:var(--px);font-size:6px;color:var(--primary);margin-bottom:5px;font-weight:400}
+.card-acts{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:6px}
+.card-acts .pcl-btn{padding:9px 4px}
+
+#toast{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);background:var(--surface);border:2px solid var(--primary);color:var(--primary);font-family:var(--px);font-size:7px;line-height:1.6;padding:8px 12px;box-shadow:3px 3px 0 var(--ink);z-index:60;display:none;max-width:88%;text-align:center}
+#toast.show{display:block}
+@media (prefers-reduced-motion:reduce){.toggle-knob{transition:none}}
+</style>
+</head>
+<body>
+<div id="app">
+ <div class="phone">
+
+  <header class="header">
+    <div>
+      <div class="logo">0%</div>
+      <div class="logo-sub">Hervanta Campus</div>
+    </div>
+    <div class="header-right">
+      <span class="status-chip" id="status">hidden</span>
+      <button class="legend-btn" id="legendBtn" aria-expanded="false">
+        <span class="role-dots"><i style="background:#e6b84a"></i><i style="background:#3d8bfd"></i><i style="background:#e07a5f"></i></span>ROLES
+      </button>
+      <div class="legend-popup hidden" id="legend" role="dialog" aria-label="Role legend">
+        <div class="legend-title">ROLE LEGEND</div>
+        <div id="legendRows"></div>
+        <div class="legend-note">Cap color shows the role. You get a blue ring and a YOU tag.</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- MAP -->
+    <div class="screen active" id="screen-map">
+      <div id="map-viewport">
+        <canvas id="map" aria-label="Campus map with people"></canvas>
+        <div class="map-search">
+          <div class="search-box">
+            <svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="4" height="1"/><rect x="1" y="2" width="1" height="4"/><rect x="6" y="2" width="1" height="4"/><rect x="2" y="6" width="4" height="1"/><rect x="6" y="7" width="2" height="2"/><rect x="8" y="9" width="2" height="2"/></svg>
+            <input id="mapSearch" type="search" placeholder="Search name, skill, role…" autocomplete="off" aria-label="Search people">
+            <button id="searchClear" class="search-clear" aria-label="Clear search" hidden>✕</button>
+          </div>
+          <div id="searchResults" class="search-results" hidden></div>
+        </div>
+      </div>
+      <div class="map-controls">
+        <button class="map-ctrl-btn" id="zin" aria-label="Zoom in">+</button>
+        <button class="map-ctrl-btn" id="zout" aria-label="Zoom out">−</button>
+        <button class="map-ctrl-btn" id="zme" aria-label="Center on me" style="font-size:7px">ME</button>
+      </div>
+      <div class="map-hint" id="maphint">
+        <span id="hintText">Turn on “On the map” in Options when searching.</span>
+        <button class="hint-go-options" id="hintOpt">OPTIONS</button>
+      </div>
+    </div>
+
+    <!-- ME -->
+    <div class="screen" id="screen-me">
+      <div class="screen-title">YOU</div>
+      <div class="screen-sub">People see this when they tap you on the map.</div>
+
+      <span class="field-label">Avatar</span>
+      <div class="avatar-box">
+        <div class="avatar-stage"><canvas id="avPreview" width="10" height="11"></canvas></div>
+        <div>
+          <div class="sw-label">SHIRT</div><div class="swatches" id="swShirt"></div>
+          <div class="sw-label">PANTS</div><div class="swatches" id="swPants"></div>
+          <div class="sw-label">SKIN</div><div class="swatches" id="swSkin"></div>
+        </div>
+      </div>
+      <div class="cap-note">Your cap takes the color of your role, so people can read it on the map.</div>
+
+      <label>
+        <span class="field-label">Name</span>
+        <input class="field-input" id="pName" type="text" maxlength="24" placeholder="What people call you">
+      </label>
+
+      <div class="field-group">
+        <span class="field-label">Role</span>
+        <div class="role-grid" id="pRole"></div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Status</span>
+        <div class="role-grid" id="pStatus"></div>
+      </div>
+
+      <div class="field-group">
+        <label for="pAbout" class="field-label">About you</label>
+        <textarea class="field-input tight" id="pAbout" rows="3" maxlength="240" placeholder="What you do, why you’re here, what you’d love to build"></textarea>
+        <div class="tag-rows" id="tagAbout"></div>
+      </div>
+
+      <div class="field-group">
+        <label for="pNeedText" class="field-label">Who I need</label>
+        <textarea class="field-input tight" id="pNeedText" rows="2" maxlength="240" placeholder="e.g. a designer who can do pixel art, or someone who knows drones"></textarea>
+        <div class="tag-rows" id="tagNeed"></div>
+      </div>
+
+      <div class="field-group">
+        <label for="pCan" class="field-label">What I can do</label>
+        <textarea class="field-input tight" id="pCan" rows="2" maxlength="240" placeholder="e.g. I can build a React frontend and connect it to an API"></textarea>
+        <div class="tag-rows" id="tagCan"></div>
+      </div>
+
+      <div class="field-group"><span class="field-label">When you’re around</span><div class="skills-wrap" id="pAvail"></div></div>
+      <div class="saved-note" id="savedNote"></div>
+    </div>
+
+    <!-- OPTIONS -->
+    <div class="screen" id="screen-opt">
+      <div class="screen-title">OPTIONS</div>
+      <div class="screen-sub">Control your visibility and appearance.</div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">On the map</div>
+          <div class="setting-desc">Show yourself when searching for teammates or a mentor.</div>
+        </div>
+        <button class="toggle" id="visToggle" role="switch" aria-checked="false" aria-label="Show me on the map"><span class="toggle-knob"></span></button>
+      </div>
+
+      <div class="setting-row" style="border-bottom:0">
+        <div>
+          <div class="setting-label">Zone</div>
+          <div class="setting-desc" id="zoneNote">Not set — choose where you are.</div>
+        </div>
+      </div>
+      <div class="skills-wrap" id="zoneBtns" style="margin:4px 0 20px"></div>
+
+      <div class="field-group">
+        <span class="field-label">Accent color</span>
+        <div class="theme-grid" id="accents">
+          <button class="theme-btn" data-a="gold" style="color:#e6b84a">GOLD</button>
+          <button class="theme-btn" data-a="blue" style="color:#4a9eff">BLUE</button>
+          <button class="theme-btn" data-a="green" style="color:#4ecb71">GREEN</button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <span class="field-label">Venue map</span>
+        <div class="upload-box">Current map: Hervanta Campus. Organizers upload a photo of the venue map, and 0% keeps only the building outlines so every venue looks the same.</div>
+        <button class="pcl-btn" id="uploadBtn">UPLOAD MAP PHOTO</button>
+      </div>
+    </div>
+
+    <!-- EVENT -->
+    <div class="screen" id="screen-event">
+      <div class="screen-title">EVENT</div>
+      <div class="screen-sub">Junction Tampere, Hervanta Campus</div>
+      <div id="challenges"></div>
+      <div class="challenge-card">
+        <div class="challenge-title">Schedule</div>
+        <div class="sched">
+          <span>FRI 17</span><span>Doors open, team forming</span>
+          <span>FRI 19</span><span>Opening, main stage</span>
+          <span>FRI 21</span><span>Hacking starts</span>
+          <span>SAT 12</span><span>Mentor rounds</span>
+          <span>SUN 10</span><span>Submissions close</span>
+          <span>SUN 13</span><span>Demos and awards</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="screen" id="screen-team">
+      <div class="screen-title">TEAM</div>
+      <div class="screen-sub">Find your people. No walking for 2 hours.</div>
+      <div class="mode-grid">
+        <button class="mode-btn active" id="modeMates">FIND<br>TEAMMATES</button>
+        <button class="mode-btn" id="modeMentors">FIND<br>A MENTOR</button>
+      </div>
+      <div class="field-group" id="missingBlock">
+        <span class="field-label">Who you’re missing</span>
+        <div class="skills-wrap" id="teamNeed"></div>
+      </div>
+      <div class="search-box solo">
+        <svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="4" height="1"/><rect x="1" y="2" width="1" height="4"/><rect x="6" y="2" width="1" height="4"/><rect x="2" y="6" width="4" height="1"/><rect x="6" y="7" width="2" height="2"/><rect x="8" y="9" width="2" height="2"/></svg>
+        <input id="teamSearch" type="search" placeholder="Filter by name, skill, role…" autocomplete="off" aria-label="Filter matches">
+      </div>
+      <div id="matchList"></div>
+      <div class="list-more">
+        <button class="pcl-btn" id="moreBtn">SHOW MORE</button>
+        <button class="pcl-btn" id="resetBtn">BRING BACK PASSED</button>
+      </div>
+    </div>
+
+    <div id="sheet" aria-hidden="true"></div>
+  </main>
+
+  <nav class="nav" aria-label="Main">
+    <button class="nav-btn" data-s="me">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>ME
+    </button>
+    <button class="nav-btn" data-s="opt">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="2.5"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4"/></svg>OPTIONS
+    </button>
+    <button class="nav-btn active" data-s="map">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1,4 7,2 11,4 17,2 17,14 11,16 7,14 1,16"/><line x1="7" y1="2" x2="7" y2="14"/><line x1="11" y1="4" x2="11" y2="16"/></svg>MAP
+    </button>
+    <button class="nav-btn" data-s="event">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="14" height="12" rx="1"/><line x1="6" y1="2" x2="6" y2="6"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="2" y1="8" x2="16" y2="8"/></svg>EVENT
+    </button>
+    <button class="nav-btn" data-s="team">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="12" cy="6" r="2.5"/><path d="M1 16c0-2.8 2.2-5 5-5"/><path d="M17 16c0-2.8-2.2-5-5-5"/><path d="M6 11c0-1.7 1.3-3 3-3s3 1.3 3 3v5H6v-5z"/></svg>TEAM
+    </button>
+  </nav>
+  <div id="toast" role="status"></div>
+ </div>
+</div>
+<script>
+(function(){
+"use strict";
+
+/* ================= DATA ================= */
+const ROLES = {
+  mentor:   {name:"Mentor",    color:"#e6b84a", sub:"gold"},
+  dev:      {name:"Developer", color:"#3d8bfd", sub:"blue"},
+  design:   {name:"Designer",  color:"#e07a5f", sub:"red"},
+  data:     {name:"Data / AI", color:"#7bc67e", sub:"green"},
+  business: {name:"Business",  color:"#c084fc", sub:"purple"}
+};
+const NOUN={mentor:"mentor",dev:"developer",design:"designer",data:"data / AI person",business:"business person"};
+const SKILLS = ["Python","JavaScript","React","Swift","Kotlin","Backend","ML","Data viz","Figma","UX research","Pixel art","Pitching","Product","Marketing","Hardware","Unity"];
+const INTERESTS = ["Climate","Health","Games","Fintech","Mobility","Education","AI","Community","Music"];
+const AVAIL = ["Fri evening","Sat day","Sat night","Sun morning"];
+const SHIRTS = ["#e94b4b","#3d7be0","#3fb36b","#f0a43a","#8a5ad6","#ececec","#2b2b33","#e86fb0"];
+const PANTS  = ["#2b4c8c","#3a3a44","#6b4a2e","#2f6a4a","#7a2f3a","#c9b48a"];
+const SKINS  = ["#f6d2b4","#e8b48f","#c98d63","#9c6440","#6b4129"];
+const STATUS = {free:{t:"Free now",c:"#7bc67e"},busy:{t:"Busy for a bit",c:"#e6b84a"},team:{t:"In a team",c:"#a89878"}};
+const ACCENTS = {
+  gold:  {primary:"#e6b84a", muted:"#a89878", line:"#5a4c3a"},
+  blue:  {primary:"#4a9eff", muted:"#7a9ab8", line:"#2a4a6a"},
+  green: {primary:"#4ecb71", muted:"#6aab7a", line:"#2a5a3a"}
+};
+const ZONES = {
+  hack:    {name:"Hacking hall", bld:"Kampusareena", x:425, y:488},
+  mentors: {name:"Mentor corner", bld:"Main building", x:543, y:505},
+  food:    {name:"Food", bld:"Festia", x:550, y:598},
+  stage:   {name:"Main stage", bld:"Tamppi Areena", x:635, y:585},
+  lab:     {name:"Hardware lab", bld:"Konetalo", x:400, y:735},
+  quiet:   {name:"Quiet room", bld:"Tietotalo", x:262, y:400},
+  entrance:{name:"Entrance", bld:"Outside, by the taxi stop", x:398, y:548}
+};
+const CHALLENGES = [
+  {host:"Junction", title:"Find your people", text:"Match teammates and mentors by skills, interests, role and availability. Say why each match makes sense.", prize:"€200 + Golden Tickets for 2nd and 3rd"},
+  {host:"Tampere University", title:"When GPS fails", text:"Help a person or drone know where it is when satellite positioning can’t be trusted.", prize:"University jury"},
+  {host:"CGI & the city", title:"A free sports slot", text:"One screen: the hall, a free slot, and how to get there.", prize:"City brief"},
+  {host:"Despro", title:"What a data centre does", text:"A clear site for people without a technical background: energy, jobs, the neighbourhood.", prize:"Despro brief"},
+  {host:"Origo", title:"What annoys you about school", text:"Find a student or teacher pain and build an idea or demo around it.", prize:"€20 + Origo for 3 years"}
+];
+// name, role, zone, skills, interests, avail, status, about, can, teamNeeds (roles their team is missing; [] = solo)
+const RAW = [
+ ["Aino Virtanen","design","hack",["Figma","UX research","Pixel art"],["Health","Community"],[0,1,2],"free","Turns messy ideas into screens people get on the first try.","I can run a 20-minute user test and turn it into a clickable prototype.",["dev","data"]],
+ ["Mateo Ruiz","dev","hack",["React","JavaScript","Backend"],["Games","Music"],[0,1,2,3],"free","Full-stack, fast prototyper, loves a good game jam.","Frontend and API in one night, deployed before breakfast.",[]],
+ ["Leena Korhonen","data","quiet",["Python","ML","Data viz"],["Climate","AI"],[1,2,3],"busy","Physics student who got hooked on model training.","Clean a messy dataset and train a first model fast.",["design","business"]],
+ ["Ravi Patel","business","food",["Pitching","Product","Marketing"],["Fintech","Education"],[0,1,3],"free","Has pitched at 9 hackathons, won 3. Wants a builder crew.","Pitch deck, demo script and the 3-minute story for judges.",[]],
+ ["Sofia Lindqvist","mentor","mentors",["Product","UX research","Pitching"],["Community","Health"],[1,3],"free","Product lead. Ask me about scoping and the demo story.","Help you cut scope so the demo actually works on Sunday.",[]],
+ ["Jonas Berg","dev","lab",["Hardware","Python","Kotlin"],["Mobility","Climate"],[0,1,2],"team","Sensors, drones, microcontrollers and anything with a soldering iron.","Wire up sensors and get a drone talking to your app.",["design"]],
+ ["Mei Chen","data","hack",["ML","Python","Backend"],["AI","Health"],[1,2],"free","Builds recommendation systems for a living.","Matching and ranking algorithms, embeddings, search.",[]],
+ ["Eero Mäkinen","mentor","mentors",["Backend","Python","ML"],["AI","Climate"],[0,1,2],"busy","Staff engineer. Happy to unblock your API or data pipeline.","Debug your backend and review your architecture.",[]],
+ ["Nora Haddad","design","food",["Figma","Pixel art","Marketing"],["Games","Music"],[0,2,3],"free","Illustrator and UI designer. Pixel art is my comfort zone.","Logo, pixel sprites and a UI kit for your demo.",[]],
+ ["Lukas Weber","dev","stage",["Swift","React","JavaScript"],["Mobility","Education"],[1,2,3],"free","iOS dev, looking for a team with a strong idea.","Native iOS app with maps and location.",[]],
+ ["Hanna Niemi","business","hack",["Product","Pitching","UX research"],["Climate","Community"],[0,1],"team","Former startup ops. I write the pitch while you write code.","Business model, user interviews and the final pitch.",["dev","data"]],
+ ["Kenji Sato","mentor","stage",["Unity","Pixel art","JavaScript"],["Games","Education"],[1,2],"free","Game studio founder. Mentoring the games and open tracks.","Game feel, pixel art pipelines and quick Unity fixes.",[]],
+ ["Olivia Brown","data","lab",["Data viz","Python","Product"],["Health","Fintech"],[0,1,3],"busy","Analyst who makes dashboards people actually read.","Dashboards and charts that explain your data in one look.",[]],
+ ["Tuomas Laine","dev","quiet",["Backend","Kotlin","Python"],["Fintech","AI"],[2,3],"team","Backend and infra. Night owl, best after midnight.","Databases, auth and servers that don’t fall over.",["design","business"]],
+ ["Amara Okafor","design","stage",["UX research","Figma","Product"],["Education","Community"],[1,3],"free","Researcher at heart. I’ll talk to users before we build.","Interview users on the floor and map their pain points.",[]],
+ ["Pekka Salo","mentor","mentors",["Hardware","Kotlin","Backend"],["Mobility","Climate"],[0,1],"free","Embedded systems mentor. GPS, maps and indoor positioning.","Positioning when GPS fails, sensors and Android.",[]],
+ ["Isabel Costa","business","lab",["Marketing","Pitching","Data viz"],["Health","Music"],[1,2],"free","Marketing student, good at making things sound simple.","Landing page copy and a clear pitch.",[]],
+ ["Ville Heikkinen","dev","food",["Unity","JavaScript","Pixel art"],["Games","Music"],[0,1,2],"free","Gameplay programmer. First Junction, very excited.","Small games and playful interfaces.",["design","business"]],
+ ["Sara Ali","data","entrance",["ML","Python","Data viz"],["Mobility","Climate"],[0,1,2,3],"free","Here the whole weekend. Into maps, routes and transit data.","Routing, maps and transport data analysis.",[]],
+ ["Daniel Kim","dev","entrance",["React","Swift","Figma"],["Health","Education"],[1,3],"busy","Mobile and web. I can design a bit too.","Cross-platform app with a decent UI.",["data"]]
+];
+const OFFS=[[0,0],[-20,6],[20,4],[-10,-12],[12,-12],[-28,-2],[28,-4]];
+const zoneCount={};
+const PEOPLE = RAW.map((r,i)=>{
+  const z=ZONES[r[2]]; const k=(zoneCount[r[2]]=(zoneCount[r[2]]||0)+1)-1; const o=OFFS[k%OFFS.length];
+  return {id:i+1,name:r[0],role:r[1],zone:r[2],skills:r[3],interests:r[4],avail:r[5].map(a=>AVAIL[a]),status:r[6],about:r[7],can:r[8],teamNeeds:r[9],
+    x:z.x+o[0],y:z.y+o[1],shirt:SHIRTS[(i*3)%SHIRTS.length],pants:PANTS[(i*5)%PANTS.length],skin:SKINS[(i*2)%SKINS.length]};
+});
+
+/* ================= TEXT → TAGS ================= */
+const SKILL_AL={"Python":["python"],"JavaScript":["javascript","js","typescript","node"],"React":["react","frontend","front-end","web"],
+ "Swift":["swift","ios","iphone"],"Kotlin":["kotlin","android"],"Backend":["backend","back-end","api","server","database","auth"],
+ "ML":["ml","machine learning","model","models","training"],"Data viz":["dataviz","chart","charts","dashboard","dashboards","visualization"],
+ "Figma":["figma","prototype","mockup","screens","ui"],"UX research":["ux","research","user test","interview","interviews"],
+ "Pixel art":["pixel","sprite","sprites","illustration"],"Pitching":["pitch","pitching","presentation","judges"],
+ "Product":["product","scope","scoping","roadmap"],"Marketing":["marketing","copy","social media","growth","landing"],
+ "Hardware":["hardware","sensor","sensors","drone","drones","arduino","electronics","solder","embedded"],"Unity":["unity","game engine","3d"]};
+const INTEREST_AL={"Climate":["climate","energy","green","sustainab","carbon"],"Health":["health","medical","care","wellbeing"],
+ "Games":["game","games","gaming","jam"],"Fintech":["fintech","finance","money","bank","payment"],
+ "Mobility":["mobility","transport","transit","drone","gps","maps","route","routes","navigation","tram","bus"],
+ "Education":["education","school","student","students","learn","teach"],"AI":["ai","llm","gpt","machine learning"],
+ "Community":["community","people","matching","network","networking","friends"],"Music":["music","audio","sound"]};
+const ROLE_AL={dev:["developer","developers","dev","coder","programmer","engineer","frontend","backend","fullstack","full-stack"],
+ design:["designer","designers","design","ui","ux"],data:["data","ml","ai","analyst","scientist"],
+ business:["business","pitch","marketing","sales","pm","product manager"]};
+const STOP=new Set("the and for with who what that this have need want someone somebody person people team teams can will just like good know make also into from your you are our some help".split(" "));
+function tokens(t){return (t||"").toLowerCase().split(/[^a-z0-9äöå+#]+/i).filter(Boolean);}
+function findTags(text,al){
+  const low=" "+(text||"").toLowerCase()+" ", tk=tokens(text), out=[];
+  for(const k in al){
+    if(al[k].some(a=> a.includes(" ") ? low.includes(a) : tk.some(w=> a.length>=4 ? w.startsWith(a) : w===a))) out.push(k);
+  }
+  return out;
+}
+function lev(a,b){if(Math.abs(a.length-b.length)>1) return 9; const d=[];for(let i=0;i<=a.length;i++){d[i]=[i];}for(let j=0;j<=b.length;j++)d[0][j]=j;
+  for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++){d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1)); if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1);}return d[a.length][b.length];}
+function wordHit(tok,word){
+  if(word.startsWith(tok)) return true;
+  if(tok.length>=4){ if(lev(tok,word)<=1) return true; if(word.length>tok.length && lev(tok,word.slice(0,tok.length))<=1) return true; }
+  return false;
+}
+
+/* ================= STATE ================= */
+const DEFAULT_ME={name:"",role:"dev",about:"",needText:"",can:"",skills:["JavaScript","React"],interests:["AI","Community"],avail:["Fri evening","Sat day","Sat night"],need:["design","data"],needSkills:[],status:"free",
+  shirt:SHIRTS[1],pants:PANTS[0],skin:SKINS[1],visible:false,zone:"",accent:"gold"};
+const KEY="floor.v5";
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.me) return s;}catch(e){}
+  return {me:{...DEFAULT_ME},accepted:[],passed:[]};
+}
+const state=load();
+state.me={...DEFAULT_ME,...state.me};
+state.accepted=state.accepted||[]; state.passed=state.passed||[];
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+const me=state.me;
+
+/* ================= HELPERS ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=Math.round((n>>16)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f);return "#"+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1);}
+let toastT;
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2200);}
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+
+/* ================= SPRITE ================= */
+// 8 x 14 pixel character, front-facing. C cap, c brim, H hair, S skin, E eye, T shirt, P pants, B shoes
+const SPRITE=[
+ "..CCCC..",
+ ".CCCCCC.",
+ ".cccccc.",
+ ".HSSSSH.",
+ ".SESSES.",
+ "..SSSS..",
+ "..TTTT..",
+ ".TTTTTT.",
+ ".STTTTS.",
+ "..TTTT..",
+ "..PPPP..",
+ "..P..P..",
+ "..P..P..",
+ ".BB..BB."
+];
+const SW=8, SH=14;
+function paletteFor(p){const cap=ROLES[p.role].color;return {C:cap,c:shade(cap,.72),H:"#3a2416",S:p.skin,E:"#15121a",T:p.shirt,P:p.pants,B:"#2a1b12"};}
+function drawSprite(ctx,x,y,px,pal){
+  for(let r=0;r<SH;r++){const row=SPRITE[r];
+    for(let c=0;c<SW;c++){const k=row[c]; if(k==="."||!pal[k]) continue; ctx.fillStyle=pal[k]; ctx.fillRect(x+c*px,y+r*px,px,px);}}
+}
+function spriteCanvas(cv,p){cv.width=SW; cv.height=SH; const c=cv.getContext("2d"); c.clearRect(0,0,SW,SH); drawSprite(c,0,0,1,paletteFor(p));}
+
+/* ================= MAP GEOMETRY (traced from the Hervanta campus map) ================= */
+const MW=1215, MH=862;
+// traced automatically from the campus photo: purple = buildings, gray = roads and parking
+const GEO_B=[[[967,567],[963,593],[975,596],[980,569]],[[301,535],[298,533],[190,534],[188,536],[188,574],[301,574]],[[966,507],[964,512],[965,528],[968,530],[986,530],[986,507]],[[871,487],[870,510],[900,510],[900,487]],[[487,458],[470,458],[467,460],[429,460],[428,458],[425,460],[359,460],[354,468],[342,469],[338,478],[349,485],[457,521],[463,521],[481,464]],[[669,349],[649,350],[647,352],[646,399],[632,398],[633,352],[631,350],[615,351],[615,391],[613,399],[606,398],[605,378],[593,379],[591,399],[581,398],[581,351],[559,350],[557,353],[539,350],[536,357],[529,357],[527,349],[514,351],[512,446],[516,448],[516,456],[506,458],[507,531],[516,532],[516,595],[523,598],[522,605],[460,604],[461,597],[479,597],[479,571],[467,568],[466,546],[422,547],[423,566],[421,569],[415,570],[415,584],[422,586],[422,596],[420,598],[370,598],[367,588],[361,586],[360,575],[325,575],[325,608],[360,609],[360,694],[377,696],[377,705],[375,707],[340,708],[339,747],[465,747],[467,744],[466,710],[451,708],[451,696],[453,694],[453,616],[450,614],[451,607],[517,608],[515,622],[525,627],[525,633],[517,634],[516,646],[518,648],[538,648],[540,663],[538,667],[517,667],[516,679],[518,681],[539,681],[540,697],[538,700],[519,700],[516,702],[516,719],[518,721],[536,721],[539,723],[537,733],[518,733],[516,735],[516,745],[581,745],[579,733],[558,732],[558,715],[581,712],[581,701],[544,700],[542,698],[543,681],[578,681],[581,678],[580,667],[543,667],[542,649],[581,647],[581,635],[543,634],[542,616],[579,615],[582,608],[670,607],[669,578],[641,577],[641,549],[635,546],[634,542],[609,542],[606,547],[599,550],[598,603],[581,602],[580,569],[542,569],[536,576],[519,579],[519,531],[523,531],[524,528],[580,527],[580,467],[524,467],[522,461],[518,459],[518,448],[543,446],[544,420],[556,421],[556,446],[558,447],[561,446],[562,420],[587,421],[587,432],[581,435],[581,447],[670,446],[670,422],[659,421],[659,399],[671,396],[671,351]],[[382,621],[432,622],[431,675],[381,674]],[[181,327],[180,374],[182,384],[178,397],[275,429],[278,435],[296,441],[301,441],[305,434],[316,434],[319,446],[336,446],[337,376],[324,375],[324,394],[322,397],[302,397],[301,363],[289,362],[288,387],[286,389],[267,389],[265,387],[265,353],[263,351],[252,352],[252,375],[250,377],[231,377],[230,340],[217,339],[215,365],[195,365],[193,359],[193,328]],[[364,244],[362,246],[362,287],[370,289],[370,296],[362,298],[361,340],[371,341],[372,349],[361,352],[361,393],[370,396],[370,415],[367,418],[361,418],[362,446],[395,446],[396,420],[423,420],[426,422],[426,447],[483,447],[483,400],[442,400],[440,398],[441,379],[463,379],[464,358],[472,356],[473,324],[464,321],[462,308],[429,308],[427,306],[427,295],[429,293],[479,293],[482,291],[482,246],[465,244],[400,245],[401,266],[414,267],[414,288],[386,289],[385,246],[383,244]],[[386,293],[425,294],[425,301],[421,307],[403,307],[401,309],[402,376],[410,379],[412,385],[412,396],[408,400],[385,399],[385,352],[380,348],[380,342],[385,339],[384,308]],[[678,139],[675,139],[672,143],[661,144],[661,146],[674,147],[676,150],[676,158],[670,160],[671,166],[685,162]]];
+const GEO_G=[[[173,613],[145,614],[147,639],[170,639],[173,636]],[[670,537],[646,538],[646,569],[649,572],[670,570]],[[286,526],[286,531],[385,532],[389,536],[405,536],[408,533],[408,526],[403,524],[401,516],[394,516],[385,524],[301,524],[300,512],[296,507],[290,507],[290,523]],[[136,151],[135,264],[126,320],[116,358],[97,407],[65,406],[65,417],[88,418],[89,428],[64,483],[52,522],[24,523],[24,530],[49,531],[48,648],[62,831],[96,828],[96,805],[203,805],[206,823],[227,823],[229,805],[525,805],[527,824],[549,824],[551,805],[1124,805],[1128,807],[1127,828],[1150,830],[1192,381],[1168,381],[1160,458],[869,458],[709,402],[709,394],[716,392],[716,365],[699,364],[699,216],[749,215],[749,199],[173,199],[170,150]],[[333,770],[455,769],[456,788],[334,789]],[[171,217],[345,215],[345,240],[325,242],[325,342],[344,342],[347,345],[347,361],[354,361],[358,356],[358,331],[352,287],[358,282],[358,241],[364,240],[364,224],[368,221],[386,222],[387,215],[690,215],[691,291],[667,292],[665,313],[637,313],[636,332],[669,332],[670,313],[690,315],[691,346],[681,347],[681,352],[691,359],[693,404],[817,448],[818,457],[532,458],[532,465],[593,466],[593,532],[629,529],[629,523],[601,522],[602,465],[750,465],[748,520],[752,524],[795,526],[795,579],[799,582],[852,582],[855,577],[855,535],[852,531],[855,517],[853,465],[1159,465],[1151,572],[1149,576],[1139,576],[1139,582],[1149,583],[1147,596],[1136,596],[1133,604],[1135,636],[1144,637],[1143,655],[1125,655],[1126,662],[1141,663],[1130,788],[692,789],[692,619],[689,616],[601,617],[600,760],[681,762],[682,788],[551,789],[549,771],[528,771],[525,789],[465,789],[464,770],[468,766],[467,752],[335,750],[335,706],[353,703],[353,631],[345,629],[345,614],[339,614],[338,640],[341,643],[341,656],[334,660],[318,660],[318,768],[325,771],[324,789],[304,789],[302,771],[281,771],[278,789],[93,789],[81,628],[81,553],[84,533],[153,532],[154,545],[145,549],[145,575],[150,575],[151,572],[173,572],[173,550],[169,546],[160,545],[161,532],[236,531],[236,507],[221,507],[219,526],[202,526],[200,513],[195,513],[194,524],[176,524],[175,513],[163,513],[162,524],[118,524],[117,509],[94,508],[94,500],[137,402],[148,369],[176,366],[176,356],[154,354],[168,275]]];
+// Labels drawn on top of the traced map (map coordinates)
+const LABELS=[
+ {t:"Tietotalo",x:228,y:372},{t:"Noodi",x:437,y:345},{t:"Sähkötalo",x:433,y:424},
+ {t:"Rakennustalo",x:592,y:410},{t:"Konetalo",x:406,y:690},
+ {t:"Parking",x:245,y:555},{t:"Research",x:930,y:548}
+];
+const STREETS=[
+ {t:"Tekniikankatu",x:460,y:190,a:0},
+ {t:"Korkeakoulunkatu",x:960,y:448,a:0},
+ {t:"Korkeakoulunkatu",x:110,y:507,a:0},
+ {t:"Hermiankatu",x:240,y:780,a:0},
+ {t:"Hervannan valtaväylä",x:36,y:650,a:-1.48},
+ {t:"Hervannantie",x:1126,y:600,a:-1.53}
+];
+
+/* ================= MAP RENDER (old palette) ================= */
+const MAP={bg:"#161210",grid:"#1c1813",road:"#221d17",roadLabel:"#5a4c3a",fill:"#2a241c",fillZone:"#252018",stroke:"#8a7a5a",zoneStroke:"#c8b890",label:"#c8b890",shadow:"#0a0908",lot:"#3a3126"};
+const cv=$("#map"), ctx=cv.getContext("2d");
+let vw=0, vh=0, dpr=1;
+const view={s:1,x:0,y:0};
+let selected=null, hoverP=null, searchHits=null, needsDraw=true;
+
+function resize(){
+  const r=cv.getBoundingClientRect(); if(!r.width) return;
+  const first=!vw; vw=r.width; vh=r.height; dpr=window.devicePixelRatio||1;
+  cv.width=Math.round(vw*dpr); cv.height=Math.round(vh*dpr);
+  if(first) centerOn(myPos(),vw/380); else clampView();
+  needsDraw=true;
+}
+function minScale(){return Math.min(vw/MW,vh/MH)*0.95;}
+function clampView(){
+  view.s=Math.max(minScale(),Math.min(5,view.s));
+  const mw=MW*view.s, mh=MH*view.s;
+  view.x = mw<vw ? (vw-mw)/2 : Math.min(vw*0.3, Math.max(vw*0.7-mw, view.x));
+  view.y = mh<vh ? (vh-mh)/2 : Math.min(vh*0.3, Math.max(vh*0.7-mh, view.y));
+}
+function centerOn(p,s){view.s=s; view.x=vw/2-p.x*view.s; view.y=(vh-40)/2-p.y*view.s; clampView(); needsDraw=true;}
+function zoomAt(sx,sy,f){
+  const ns=Math.max(minScale(),Math.min(5,view.s*f)); const k=ns/view.s;
+  view.x=sx-(sx-view.x)*k; view.y=sy-(sy-view.y)*k; view.s=ns; clampView(); needsDraw=true;
+}
+function myPos(){const z=ZONES[me.zone]||ZONES.hack; return {x:z.x+6,y:z.y+22};}
+function meVisible(){return me.visible && !!ZONES[me.zone];}
+function pathPoly(c,pts){c.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++) c.lineTo(pts[i][0],pts[i][1]); c.closePath();}
+
+function draw(t){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=MAP.bg; ctx.fillRect(0,0,vw,vh);
+  const primary=cssVar("--primary"), fg=cssVar("--fg"), you=cssVar("--you"), surface=cssVar("--surface"), line=cssVar("--line");
+
+  ctx.save(); ctx.translate(view.x,view.y); ctx.scale(view.s,view.s);
+  // grid
+  ctx.strokeStyle=MAP.grid; ctx.lineWidth=0.5/view.s;
+  ctx.beginPath(); for(let gx=0;gx<=MW;gx+=20){ctx.moveTo(gx,0);ctx.lineTo(gx,MH);} for(let gy=0;gy<=MH;gy+=20){ctx.moveTo(0,gy);ctx.lineTo(MW,gy);} ctx.stroke();
+  // roads and parking (traced gray)
+  ctx.beginPath(); for(const p of GEO_G) pathPoly(ctx,p);
+  ctx.fillStyle=MAP.road; ctx.fill("evenodd");
+  // buildings (traced purple): shadow, fill, outline
+  const sh=3/view.s;
+  ctx.save(); ctx.translate(sh,sh); ctx.beginPath(); for(const p of GEO_B) pathPoly(ctx,p);
+  ctx.fillStyle=MAP.shadow; ctx.fill("evenodd"); ctx.restore();
+  ctx.beginPath(); for(const p of GEO_B) pathPoly(ctx,p);
+  ctx.fillStyle=MAP.fill; ctx.fill("evenodd");
+  ctx.strokeStyle=MAP.stroke; ctx.lineWidth=1.5/view.s; ctx.stroke();
+  ctx.restore();
+
+  const S=(x,y)=>[x*view.s+view.x, y*view.s+view.y];
+  // street labels
+  ctx.textBaseline="middle"; ctx.textAlign="center";
+  if(view.s>0.55){
+    ctx.font="10px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=MAP.roadLabel;
+    for(const s of STREETS){const [x,y]=S(s.x,s.y); ctx.save(); ctx.translate(x,y); ctx.rotate(s.a); ctx.fillText(s.t,0,0); ctx.restore();}
+  }
+  // building names
+  ctx.font="7px 'Press Start 2P', monospace"; ctx.fillStyle=MAP.label;
+  if(view.s>0.75) for(const l of LABELS){const [x,y]=S(l.x,l.y); ctx.globalAlpha=.6; ctx.fillText(l.t,x,y); ctx.globalAlpha=1;}
+  // zone tags
+  for(const id in ZONES){
+    const z=ZONES[id];
+    const [x,zy]=S(z.x,z.y); const y=zy+16; const mine=meVisible()&&me.zone===id;
+    ctx.font="7px 'Press Start 2P', monospace";
+    const w=Math.round(ctx.measureText(z.name).width+12), x0=Math.round(x-w/2), y0=Math.round(y-8);
+    ctx.fillStyle=MAP.shadow; ctx.fillRect(x0+2,y0+2,w,16);
+    ctx.fillStyle=surface; ctx.fillRect(x0,y0,w,16);
+    ctx.strokeStyle=mine?you:line; ctx.lineWidth=2; ctx.strokeRect(x0+1,y0+1,w-2,14);
+    ctx.fillStyle=mine?you:primary; ctx.fillText(z.name,x,y+1);
+  }
+  // people
+  ctx.imageSmoothingEnabled=false;
+  const px = view.s>2.2 ? 3 : 2;
+  const showAll = view.s>=2.6;
+  const labels=[];
+  for(const p of PEOPLE.slice().sort((a,b)=>a.y-b.y)){
+    const [x,y]=S(p.x,p.y);
+    if(x<-30||y<-50||x>vw+30||y>vh+30) continue;
+    const dim = searchHits && !searchHits.has(p.id);
+    ctx.globalAlpha = dim ? 0.22 : 1;
+    const ox=Math.round(x-SW*px/2), oy=Math.round(y-SH*px);
+    ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.fillRect(ox,Math.round(y)-px/2,SW*px,px);
+    drawSprite(ctx,ox,oy,px,paletteFor(p));
+    ctx.globalAlpha=1;
+    const hit = searchHits && searchHits.has(p.id);
+    if(selected===p || hoverP===p || (!dim && (showAll || hit))) labels.push({p,x,oy,strong:selected===p||hoverP===p});
+  }
+  // name tags above heads (drawn after all sprites so nothing covers them)
+  ctx.font="7px 'Press Start 2P', monospace";
+  for(const L of labels){
+    const first=L.p.name.split(" ")[0];
+    const txt = L.strong ? L.p.name : first;
+    let ay=L.oy-6;
+    if(selected===L.p){
+      ay=L.oy-8-(Math.floor(t/300)%2)*2;
+      ctx.fillStyle=fg; ctx.fillRect(Math.round(L.x)-4,ay,8,2); ctx.fillRect(Math.round(L.x)-2,ay+2,4,2);
+    }
+    const w=Math.round(ctx.measureText(txt).width+10), x0=Math.round(L.x-w/2), y0=ay-18;
+    if(L.strong){ctx.fillStyle=MAP.shadow; ctx.fillRect(x0+2,y0+2,w,15);}
+    ctx.fillStyle=surface; ctx.fillRect(x0,y0,w,15);
+    ctx.strokeStyle=L.strong?ROLES[L.p.role].color:line; ctx.lineWidth=L.strong?2:1; ctx.strokeRect(x0+1,y0+1,w-2,13);
+    ctx.fillStyle=fg; ctx.fillText(txt,L.x,y0+8);
+  }
+  // you
+  if(meVisible()){
+    const mp=myPos(); const [x,y]=S(mp.x,mp.y); const ph=(t%2000)/2000;
+    ctx.strokeStyle=you; ctx.globalAlpha=0.5*(1-ph); ctx.lineWidth=2;
+    const rr=10+ph*18; ctx.strokeRect(Math.round(x-rr),Math.round(y-rr*0.5),Math.round(rr*2),Math.round(rr));
+    ctx.globalAlpha=.35; ctx.fillStyle=you; ctx.fillRect(Math.round(x-12),Math.round(y-3),24,5); ctx.globalAlpha=1;
+    const ox=Math.round(x-SW*px/2), oy=Math.round(y-SH*px);
+    drawSprite(ctx,ox,oy,px,paletteFor(me));
+    ctx.font="7px 'Press Start 2P', monospace"; ctx.fillStyle=you; ctx.fillText("YOU",x,oy-8);
+  }
+}
+let lastBlink=0;
+function loop(t){
+  if($("#screen-map").classList.contains("active")){
+    if(!vw) resize();
+    const blink=Math.floor(t/300);
+    if(needsDraw||meVisible()||(selected&&blink!==lastBlink)){draw(t); needsDraw=false; lastBlink=blink;}
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- input ---------- */
+const ptrs=new Map(); let down=null, multi=false, pinch=null;
+cv.addEventListener("pointerdown",e=>{
+  cv.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===1){down={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y,moved:0}; multi=false;}
+  if(ptrs.size===2){multi=true; const [a,b]=[...ptrs.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y)};}
+});
+cv.addEventListener("pointermove",e=>{
+  if(e.pointerType==="mouse" && !ptrs.size){
+    const r=cv.getBoundingClientRect(); const p=personAt(e.clientX-r.left,e.clientY-r.top);
+    if(p!==hoverP){hoverP=p; cv.style.cursor=p?"pointer":""; needsDraw=true;}
+    return;
+  }
+  if(!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  const r=cv.getBoundingClientRect();
+  if(ptrs.size===2&&pinch){const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(pinch.d>0) zoomAt((a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top,d/pinch.d); pinch.d=d; return;}
+  if(down&&ptrs.size===1&&!multi){
+    const dx=e.clientX-down.x, dy=e.clientY-down.y; down.moved=Math.max(down.moved,Math.hypot(dx,dy));
+    if(down.moved>6){cv.classList.add("drag"); view.x=down.vx+dx; view.y=down.vy+dy; clampView(); needsDraw=true;}
+  }
+});
+function endPtr(e){
+  if(!ptrs.has(e.pointerId)) return;
+  ptrs.delete(e.pointerId);
+  if(ptrs.size<2) pinch=null;
+  if(ptrs.size===0){
+    cv.classList.remove("drag");
+    if(down&&!multi&&down.moved<=6&&e.type==="pointerup"){const r=cv.getBoundingClientRect(); tapAt(e.clientX-r.left,e.clientY-r.top);}
+    down=null;
+  }
+}
+cv.addEventListener("pointerup",endPtr);
+cv.addEventListener("pointerleave",()=>{if(hoverP){hoverP=null; needsDraw=true;}});
+cv.addEventListener("pointercancel",endPtr);
+cv.addEventListener("wheel",e=>{e.preventDefault(); const r=cv.getBoundingClientRect(); zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.12:1/1.12);},{passive:false});
+
+function personAt(sx,sy){
+  const px=view.s>2.2?3:2, hw=SW*px/2+6, hh=SH*px+6;
+  let best=null, bd=1e9;
+  for(const p of PEOPLE){
+    if(searchHits && !searchHits.has(p.id)) continue;
+    const x=p.x*view.s+view.x, y=p.y*view.s+view.y;
+    if(sx>x-hw&&sx<x+hw&&sy>y-hh&&sy<y+6){const d=Math.hypot(sx-x,sy-(y-SH*px/2)); if(d<bd){bd=d;best=p;}}}
+  return best;
+}
+function tapAt(sx,sy){
+  const px=view.s>2.2?3:2, hw=SW*px/2+8, hh=SH*px+8;
+  if(meVisible()){const mp=myPos(); const x=mp.x*view.s+view.x, y=mp.y*view.s+view.y;
+    if(sx>x-hw&&sx<x+hw&&sy>y-hh&&sy<y+8){selected=null; needsDraw=true; switchScreen("me"); return;}}
+  const best=personAt(sx,sy);
+  if(best){selected=best; needsDraw=true; openCard(best);}
+  else if(selected){selected=null; needsDraw=true;}
+}
+$("#zin").onclick=()=>zoomAt(vw/2,vh/2,1.25);
+$("#zout").onclick=()=>zoomAt(vw/2,vh/2,0.8);
+$("#zme").onclick=()=>{centerOn(meVisible()?myPos():ZONES.hack,Math.max(view.s,vw/380)); if(!meVisible()) toast("You’re hidden. Turn on “On the map” in Options.");};
+$("#hintOpt").onclick=()=>switchScreen("opt");
+window.addEventListener("resize",()=>{if($("#screen-map").classList.contains("active")) resize();});
+
+/* ================= MATCHING ================= */
+let mode="mates";
+function matchFor(p){
+  const reasons=[]; let s=10;
+  if(p.role==="mentor"){
+    const help=p.skills.filter(k=>!me.skills.includes(k)), rel=p.skills.filter(k=>me.skills.includes(k));
+    if(help.length){s+=Math.min(30,help.length*12); reasons.push(`Knows ${help.slice(0,2).join(" and ")}, which you don’t list yet`);}
+    if(rel.length){s+=rel.length*8; reasons.push(`Can review your ${rel[0]} work`);}
+  } else {
+    if(me.need.includes(p.role)){s+=34; reasons.push(`You’re missing a ${NOUN[p.role]}`);}
+    else if(p.role!==me.role) s+=10;
+    if(me.role!=="mentor"&&p.teamNeeds.includes(me.role)){s+=12; reasons.push(`Their team needs a ${NOUN[me.role]} like you`);}
+    const wanted=p.skills.filter(k=>me.needSkills.includes(k));
+    if(wanted.length){s+=Math.min(24,wanted.length*12); reasons.push(`Has the ${wanted.slice(0,2).join(" and ")} you’re looking for`);}
+    const fresh=p.skills.filter(k=>!me.skills.includes(k));
+    if(fresh.length){s+=Math.min(16,fresh.length*6); if(reasons.length<2) reasons.push(`Brings ${fresh.slice(0,2).join(" and ")}`);}
+  }
+  // words from “Who I need” that appear in their profile
+  const ptoks=new Set(tokens(p.about+" "+p.can+" "+p.skills.join(" ")));
+  const roleWords=new Set(Object.values(ROLE_AL).flat());
+  const said=[...new Set(tokens(me.needText))].filter(w=>w.length>=4&&!STOP.has(w)&&!roleWords.has(w)&&[...ptoks].some(x=>x.startsWith(w)));
+  if(said.length){s+=Math.min(18,said.length*6); reasons.unshift(`Mentions “${said[0]}”, which you asked for`);}
+  if(p.status==="free"){s+=p.role==="mentor"?10:4; if(p.role==="mentor") reasons.unshift("Free right now");}
+  else if(p.status==="busy") s-=4;
+  const shared=p.interests.filter(k=>me.interests.includes(k));
+  if(shared.length){s+=Math.min(22,shared.length*11); reasons.push(`You’re both into ${shared.join(" and ")}`);}
+  const both=p.avail.filter(a=>me.avail.includes(a));
+  s+=Math.min(18,both.length*6);
+  if(both.length>=2) reasons.push(`Around at the same times: ${both.slice(0,2).join(", ")}`);
+  else if(both.length===1) reasons.push(`Overlap only on ${both[0]}`);
+  else reasons.push("No shared hours yet, plan a quick handover");
+  return {pct:Math.max(8,Math.min(99,s)),why:reasons.slice(0,3)};
+}
+function candidates(){
+  return PEOPLE.filter(p=>mode==="mentors"?p.role==="mentor":p.role!=="mentor").map(p=>({p,m:matchFor(p)})).sort((a,b)=>b.m.pct-a.m.pct);
+}
+
+/* ================= SEARCH ================= */
+function searchPeople(q){
+  const qt=tokens(q).filter(t=>t.length>=2); if(!qt.length) return null;
+  const out=[];
+  for(const p of PEOPLE){
+    const fields=[
+      {l:"name",v:p.name,w:6},{l:"role",v:ROLES[p.role].name+" "+NOUN[p.role],w:5},
+      {l:"skills",v:p.skills.join(", "),w:4},{l:"interests",v:p.interests.join(", "),w:3},
+      {l:"zone",v:ZONES[p.zone].name+" "+ZONES[p.zone].bld,w:2},{l:"status",v:STATUS[p.status].t,w:2},
+      {l:"profile",v:p.about+" "+p.can,w:1}];
+    let score=0, why=null, ok=true;
+    for(const t of qt){
+      let best=null;
+      for(const f of fields){ if(tokens(f.v).some(w=>wordHit(t,w))){ if(!best||f.w>best.w) best=f; } }
+      if(!best){ok=false;break;}
+      score+=best.w; if(!why||best.w>why.w) why=best;
+    }
+    if(ok){
+      let shown=why.v;
+      if(why.l==="skills"||why.l==="interests"){const hit=why.v.split(", ").find(x=>tokens(x).some(w=>qt.some(t=>wordHit(t,w)))); if(hit) shown=hit;}
+      if(why.l==="profile"){const w=tokens(why.v).find(w=>qt.some(t=>wordHit(t,w))); shown="mentions “"+w+"”";}
+      if(why.l==="role") shown=ROLES[p.role].name;
+      if(why.l==="zone") shown=ZONES[p.zone].name;
+      out.push({p,score,why: why.l==="name"?"":(why.l==="profile"?shown:`${why.l}: ${shown}`)});
+    }
+  }
+  return out.sort((a,b)=>b.score-a.score||a.p.name.localeCompare(b.p.name));
+}
+let lastResults=[];
+function runMapSearch(){
+  const q=$("#mapSearch").value, res=searchPeople(q), box=$("#searchResults");
+  $("#searchClear").hidden=!q;
+  if(!res){searchHits=null; box.hidden=true; needsDraw=true; return;}
+  lastResults=res; searchHits=new Set(res.map(r=>r.p.id)); needsDraw=true;
+  box.hidden=false;
+  box.innerHTML = res.length ? res.slice(0,6).map(r=>`<button class="sr-row" data-id="${r.p.id}"><canvas width="${SW}" height="${SH}"></canvas><span class="sr-txt"><span class="sr-name">${esc(r.p.name)}</span><span class="sr-why"><span style="color:${ROLES[r.p.role].color}">■</span> ${esc(ROLES[r.p.role].name)}${r.why?" · "+esc(r.why):""}</span></span></button>`).join("")
+      + (res.length>6?`<div class="sr-more">${res.length-6} more on the map</div>`:"")
+    : `<div class="sr-more">No one matches “${esc(q)}”. Try a skill, a role or a name.</div>`;
+  box.querySelectorAll(".sr-row").forEach(b=>spriteCanvas(b.querySelector("canvas"),PEOPLE.find(x=>x.id===+b.dataset.id)));
+}
+function goToPerson(p){
+  $("#searchResults").hidden=true; $("#mapSearch").blur();
+  centerOn(p,Math.max(view.s,2)); selected=p; needsDraw=true;
+}
+$("#mapSearch").addEventListener("input",runMapSearch);
+$("#mapSearch").addEventListener("focus",()=>{ if($("#mapSearch").value) runMapSearch(); });
+$("#mapSearch").addEventListener("keydown",e=>{ if(e.key==="Enter"&&lastResults.length&&searchHits){ goToPerson(lastResults[0].p); } if(e.key==="Escape"){ clearSearch(); } });
+$("#searchResults").addEventListener("click",e=>{const b=e.target.closest(".sr-row"); if(!b) return; goToPerson(PEOPLE.find(x=>x.id===+b.dataset.id));});
+function clearSearch(){ $("#mapSearch").value=""; runMapSearch(); $("#mapSearch").blur(); }
+$("#searchClear").onclick=clearSearch;
+cv.addEventListener("pointerdown",()=>{ $("#searchResults").hidden=true; });
+
+/* ================= CARD ================= */
+const sheet=$("#sheet");
+function bar(v){let h='<div class="bar">';for(let i=0;i<10;i++)h+=`<i class="${i<v?"f":""}"></i>`;return h+"</div>";}
+function openCard(p){
+  const m=matchFor(p), role=ROLES[p.role], z=ZONES[p.zone], acc=state.accepted.includes(p.id), isMentor=p.role==="mentor";
+  const team= isMentor ? "Mentor on the floor" : p.teamNeeds.length ? "Has a team, needs "+p.teamNeeds.map(r=>ROLES[r].name).join(", ") : "Solo, looking for a team";
+  const no=String(p.id).padStart(3,"0");
+  sheet.innerHTML=`
+  <div class="pcard" style="--rc:${role.color}" role="dialog" aria-label="${esc(p.name)}">
+    <div class="pcard-band"></div>
+    <div class="pcard-in">
+      <div class="pcard-top"><span class="pcard-no">No. ${no}</span>
+        <span style="display:flex;gap:6px;align-items:center"><span class="pcard-badge">${esc(role.name.toUpperCase())}</span><button class="card-close" data-act="close" aria-label="Close">✕</button></span></div>
+      <div class="pcard-art"><span class="pcard-zone">${esc(z.name.toUpperCase())}</span><span class="pcard-num">${no}</span><canvas id="cardSprite"></canvas></div>
+      <div class="pcard-name">${esc(p.name)}</div>
+      <div class="pcard-team">${esc(team)} · ${esc(z.bld)}</div>
+      <div class="stats">
+        <span>MATCH</span>${bar(Math.round(m.pct/10))}<span class="v">${m.pct}%</span>
+        <span>HOURS</span>${bar(Math.round(p.avail.length/AVAIL.length*10))}<span class="v">${p.avail.length}/${AVAIL.length}</span>
+        <span>STATUS</span><span class="statusv" style="color:${STATUS[p.status].c}">■ ${STATUS[p.status].t.toUpperCase()}</span>
+      </div>
+      <div class="spec"><span>SKILLS</span><span>${esc(p.skills.join(", "))}</span></div>
+      <div class="spec"><span>INTERESTS</span><span>${esc(p.interests.join(", "))}</span></div>
+      <div class="spec"><span>AROUND</span><span>${esc(p.avail.join(", "))}</span></div>
+      <div class="spec"><span>ABOUT</span><span>${esc(p.about)}</span></div>
+      <div class="spec"><span>CAN DO</span><span>${esc(p.can)}</span></div>
+      <div class="whybox"><b>WHY YOU MATCH</b>${m.why.map(esc).join(". ")}.</div>
+      <div class="card-acts">
+        <button class="pcl-btn" data-act="pass">PASS</button>
+        <button class="pcl-btn" data-act="next">NEXT</button>
+        ${acc?'<button class="pcl-btn" disabled>SENT</button>':`<button class="pcl-btn primary" data-act="accept">${isMentor?"ASK":"TEAM UP"}</button>`}
+      </div>
+    </div>
+  </div>`;
+  spriteCanvas($("#cardSprite"),p);
+  sheet.dataset.id=p.id; sheet.classList.add("open"); sheet.setAttribute("aria-hidden","false");
+  const c=sheet.querySelector(".card-close"); if(c) c.focus({preventScroll:true});
+}
+function closeCard(){sheet.classList.remove("open"); sheet.setAttribute("aria-hidden","true"); sheet.innerHTML=""; selected=null; needsDraw=true;}
+function sendRequest(p){
+  if(!state.accepted.includes(p.id)) state.accepted.push(p.id);
+  state.passed=state.passed.filter(i=>i!==p.id); save();
+  toast(p.role==="mentor"?`Help request sent to ${p.name}`:`Team-up request sent to ${p.name}`);
+}
+sheet.addEventListener("click",e=>{
+  if(e.target===sheet){closeCard();return;}
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const p=PEOPLE.find(x=>x.id===+sheet.dataset.id); if(!p) return;
+  const act=b.dataset.act;
+  if(act==="close") closeCard();
+  else if(act==="accept"){sendRequest(p); openCard(p); renderTeam();}
+  else if(act==="pass"){if(!state.passed.includes(p.id)) state.passed.push(p.id); save(); closeCard(); toast(`Passed on ${p.name}`); renderTeam();}
+  else if(act==="next"){
+    const same=PEOPLE.filter(x=>(x.role==="mentor")===(p.role==="mentor")&&!state.passed.includes(x.id)).map(x=>({x,s:matchFor(x).pct})).sort((a,b)=>b.s-a.s).map(o=>o.x);
+    const n=same[(same.indexOf(p)+1)%same.length]||p; selected=n; needsDraw=true; openCard(n);
+  }
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(sheet.classList.contains("open")) closeCard(); legendOpen(false);}});
+
+/* ================= LEGEND ================= */
+function legendOpen(v){$("#legend").classList.toggle("hidden",!v); $("#legendBtn").setAttribute("aria-expanded",String(v));}
+$("#legendBtn").onclick=e=>{e.stopPropagation(); legendOpen($("#legend").classList.contains("hidden"));};
+document.addEventListener("click",e=>{if(!e.target.closest("#legend")&&!e.target.closest("#legendBtn")) legendOpen(false);});
+function renderLegend(){
+  let h=`<div class="legend-row"><canvas width="${SW}" height="${SH}" data-you="1"></canvas><span class="legend-label" style="color:var(--you)">You</span><span class="legend-label-sub">blue ring</span></div>`;
+  for(const k in ROLES) h+=`<div class="legend-row"><canvas width="${SW}" height="${SH}" data-role="${k}"></canvas><span class="legend-label">${ROLES[k].name}</span><span class="legend-label-sub">${ROLES[k].sub}</span></div>`;
+  $("#legendRows").innerHTML=h;
+  $("#legendRows").querySelectorAll("canvas").forEach(c=>{
+    const x=c.getContext("2d");
+    drawSprite(x,0,0,1, c.dataset.you ? paletteFor(me) : paletteFor({role:c.dataset.role,skin:SKINS[1],shirt:"#ececec",pants:"#3a3a44"}));
+  });
+}
+
+/* ================= NAV ================= */
+function switchScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id==="screen-"+id));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.s===id));
+  if(sheet.classList.contains("open")&&id!=="map"&&id!=="team") closeCard();
+  legendOpen(false);
+  if(id==="map") requestAnimationFrame(()=>{resize(); needsDraw=true;});
+  if(id==="team") renderTeam();
+}
+document.querySelectorAll(".nav-btn").forEach(b=>b.onclick=()=>switchScreen(b.dataset.s));
+
+/* ================= ME ================= */
+let saveT;
+function changed(){
+  save(); renderAvatar(); renderLegend(); needsDraw=true;
+  $("#savedNote").textContent="SAVED ON THIS DEVICE";
+  clearTimeout(saveT); saveT=setTimeout(()=>$("#savedNote").textContent="",1600);
+}
+function swatches(el,list,key){
+  el.innerHTML=list.map(c=>`<button class="sw${me[key]===c?" on":""}" style="background:${c}" data-c="${c}" aria-label="${key} ${c}"></button>`).join("");
+  el.onclick=e=>{const b=e.target.closest(".sw"); if(!b) return; me[key]=b.dataset.c; el.querySelectorAll(".sw").forEach(s=>s.classList.toggle("on",s===b)); changed();};
+}
+function renderAvatar(){const cvs=$("#avPreview"); cvs.width=SW; cvs.height=SH; const c=cvs.getContext("2d"); c.clearRect(0,0,SW,SH); drawSprite(c,0,0,1,paletteFor(me));}
+function chips(el,list,arr,labelFn,after){
+  el.innerHTML=list.map(v=>`<button class="skill-btn${arr.includes(v)?" active":""}" data-v="${esc(v)}">${esc(labelFn?labelFn(v):v)}</button>`).join("");
+  el.onclick=e=>{const b=e.target.closest(".skill-btn"); if(!b) return; const v=b.dataset.v, i=arr.indexOf(v);
+    if(i>=0) arr.splice(i,1); else arr.push(v); b.classList.toggle("active",i<0); changed(); if(after) after();};
+}
+// Text first, tags as suggestions under each field
+const NEED_ROLES=["dev","design","data","business"];
+const TAGROWS={
+  about:{el:"#tagAbout", src:"about", groups:[{arr:()=>me.interests, list:INTERESTS, al:INTEREST_AL, label:v=>v}]},
+  can:  {el:"#tagCan",   src:"can",   groups:[{arr:()=>me.skills, list:SKILLS, al:SKILL_AL, label:v=>v}]},
+  need: {el:"#tagNeed",  src:"needText", groups:[{arr:()=>me.need, list:NEED_ROLES, al:ROLE_AL, label:k=>ROLES[k].name},{arr:()=>me.needSkills, list:SKILLS, al:SKILL_AL, label:v=>v}]}
+};
+const expanded={};
+function renderTagRow(key){
+  const R=TAGROWS[key], text=me[R.src]; let act="", fromText="", popular="", rest="";
+  R.groups.forEach((g,gi)=>{
+    const arr=g.arr(), found=findTags(text,g.al).filter(v=>!arr.includes(v));
+    arr.forEach(v=>act+=`<button class="skill-btn active" data-g="${gi}" data-v="${esc(v)}" aria-label="Remove ${esc(g.label(v))}">${esc(g.label(v))} ✕</button>`);
+    found.forEach(v=>fromText+=`<button class="skill-btn suggest hot" data-g="${gi}" data-v="${esc(v)}">+ ${esc(g.label(v))}</button>`);
+    g.list.filter(v=>!arr.includes(v)&&!found.includes(v)).forEach((v,ix)=>{
+      const b=`<button class="skill-btn suggest" data-g="${gi}" data-v="${esc(v)}">+ ${esc(g.label(v))}</button>`;
+      if(ix<(R.groups.length>1?2:3)) popular+=b; else rest+=b;
+    });
+  });
+  const el=$(R.el);
+  el.innerHTML=
+    (act?`<div class="tag-line">${act}</div>`:"")+
+    (fromText?`<div class="tag-hint">FROM YOUR TEXT</div><div class="tag-line">${fromText}</div>`:"")+
+    `<div class="tag-hint">${fromText?"MORE":"SUGGESTED"}</div><div class="tag-line">${popular}${expanded[key]?rest:""}${rest?`<button class="skill-btn more" data-more="1">${expanded[key]?"LESS":"ALL TAGS"}</button>`:""}</div>`;
+}
+function initTagRows(){
+  for(const key in TAGROWS){
+    const R=TAGROWS[key];
+    $(R.el).onclick=e=>{
+      const b=e.target.closest(".skill-btn"); if(!b) return;
+      if(b.dataset.more){expanded[key]=!expanded[key]; renderTagRow(key); return;}
+      const arr=R.groups[+b.dataset.g].arr(), v=b.dataset.v, i=arr.indexOf(v);
+      if(i>=0) arr.splice(i,1); else arr.push(v);
+      renderTagRow(key); changed(); if(key==="need") syncNeed();
+    };
+    renderTagRow(key);
+  }
+}
+function syncNeed(){
+  $("#teamNeed").querySelectorAll(".skill-btn").forEach(c=>c.classList.toggle("active",me.need.includes(c.dataset.v)));
+  renderTagRow("need"); renderTeam();
+}
+function renderRoles(){
+  $("#pRole").innerHTML=Object.keys(ROLES).map(k=>`<button class="role-pick-btn${me.role===k?" active":""}" data-r="${k}"><i style="background:${ROLES[k].color}"></i>${ROLES[k].name.toUpperCase()}</button>`).join("");
+}
+function renderMyStatus(){
+  $("#pStatus").innerHTML=Object.keys(STATUS).map(k=>`<button class="role-pick-btn${me.status===k?" active":""}" data-st="${k}"><i style="background:${STATUS[k].c}"></i>${STATUS[k].t.toUpperCase()}</button>`).join("");
+}
+function initMe(){
+  swatches($("#swShirt"),SHIRTS,"shirt"); swatches($("#swPants"),PANTS,"pants"); swatches($("#swSkin"),SKINS,"skin");
+  renderRoles(); renderMyStatus();
+  $("#pRole").onclick=e=>{const b=e.target.closest(".role-pick-btn"); if(!b) return; me.role=b.dataset.r; renderRoles(); changed(); renderTeam();};
+  $("#pStatus").onclick=e=>{const b=e.target.closest(".role-pick-btn"); if(!b) return; me.status=b.dataset.st; renderMyStatus(); changed();};
+  $("#pName").value=me.name; $("#pName").oninput=()=>{me.name=$("#pName").value; changed();};
+  const bindText=(id,key,row)=>{const el=$(id); el.value=me[key]; el.oninput=()=>{me[key]=el.value; renderTagRow(row); changed(); if(row==="need") renderTeam();};};
+  bindText("#pAbout","about","about"); bindText("#pCan","can","can"); bindText("#pNeedText","needText","need");
+  chips($("#pAvail"),AVAIL,me.avail);
+  chips($("#teamNeed"),NEED_ROLES,me.need,k=>ROLES[k].name,syncNeed);
+  initTagRows();
+  renderAvatar();
+}
+
+/* ================= OPTIONS ================= */
+function renderVis(){
+  const on=meVisible();
+  const t=$("#visToggle"); t.classList.toggle("on",me.visible); t.setAttribute("aria-checked",String(me.visible));
+  const st=$("#status"); st.textContent=on?"visible":"hidden"; st.classList.toggle("visible",on);
+  $("#zoneNote").textContent= ZONES[me.zone] ? `${ZONES[me.zone].name}, ${ZONES[me.zone].bld}` : "Not set — choose where you are.";
+  $("#zoneBtns").querySelectorAll(".skill-btn").forEach(b=>b.classList.toggle("active",b.dataset.z===me.zone));
+  $("#hintText").textContent= on ? `You’re at ${ZONES[me.zone].name}. Tap a person to see their card.` : "Turn on “On the map” in Options when searching.";
+  $("#hintOpt").style.display= on?"none":"";
+  needsDraw=true;
+}
+function applyAccent(a){
+  const ac=ACCENTS[a]||ACCENTS.gold, root=document.documentElement;
+  root.style.setProperty("--primary",ac.primary); root.style.setProperty("--muted",ac.muted); root.style.setProperty("--line",ac.line);
+  $("#accents").querySelectorAll(".theme-btn").forEach(b=>b.classList.toggle("active",b.dataset.a===a));
+  needsDraw=true;
+}
+function initOptions(){
+  $("#zoneBtns").innerHTML=Object.keys(ZONES).map(k=>`<button class="skill-btn" data-z="${k}">${esc(ZONES[k].name)}</button>`).join("");
+  $("#zoneBtns").onclick=e=>{const b=e.target.closest(".skill-btn"); if(!b) return; me.zone=b.dataset.z; if(!me.visible) me.visible=true; save(); renderVis();};
+  $("#visToggle").onclick=()=>{me.visible=!me.visible; if(me.visible&&!me.zone) toast("Pick a zone so people can find you"); save(); renderVis();};
+  $("#accents").onclick=e=>{const b=e.target.closest(".theme-btn"); if(!b) return; me.accent=b.dataset.a; save(); applyAccent(me.accent);};
+  $("#uploadBtn").onclick=()=>toast("Uploading a new map arrives in the next build");
+  applyAccent(me.accent); renderVis();
+}
+
+/* ================= EVENT ================= */
+function initEvent(){
+  $("#challenges").innerHTML=CHALLENGES.map(c=>`<div class="challenge-card"><div class="challenge-host">${esc(c.host)}</div><div class="challenge-title">${esc(c.title)}</div><div class="challenge-text">${esc(c.text)}</div><div class="challenge-prize">Prize: ${esc(c.prize)}</div></div>`).join("");
+}
+
+/* ================= TEAM ================= */
+let shown=3;
+function renderTeam(){
+  $("#modeMates").classList.toggle("active",mode==="mates");
+  $("#modeMentors").classList.toggle("active",mode==="mentors");
+  $("#missingBlock").style.display= mode==="mates"?"":"none";
+  const q=$("#teamSearch").value, sr=searchPeople(q), hitMap=new Map((sr||[]).map(r=>[r.p.id,r.why]));
+  const all=candidates().filter(o=>!state.passed.includes(o.p.id) && (!sr||hitMap.has(o.p.id))), list=all.slice(0,shown), el=$("#matchList");
+  if(!list.length) el.innerHTML= sr ? `<div class="empty-state">No one here matches “${esc(q)}”. Try a skill, a role or a name.</div>` : `<div class="empty-state">No one left in this list. Bring back the people you passed, or change who you’re missing.</div>`;
+  else el.innerHTML=list.map(({p,m})=>{
+    const acc=state.accepted.includes(p.id), r=ROLES[p.role];
+    return `<div class="person-card-list" data-id="${p.id}">
+      <div class="pcl-top"><canvas width="${SW}" height="${SH}" data-act="open"></canvas>
+        <div class="pcl-info"><div class="pcl-name" data-act="open">${esc(p.name)}</div>
+          <div class="pcl-role"><span style="color:${r.color}">■</span> ${esc(r.name.toUpperCase())} · ${esc(ZONES[p.zone].name.toUpperCase())}<br><span style="color:${STATUS[p.status].c}">■</span> ${esc(STATUS[p.status].t.toUpperCase())}</div></div>
+        <span class="pcl-pct">${m.pct}%</span></div>
+      <div class="pcl-text">${esc(p.about)}</div>
+      ${sr&&hitMap.get(p.id)?`<div class="pcl-found">FOUND BY ${esc(hitMap.get(p.id).toUpperCase())}</div>`:""}
+      <div class="pcl-why">${esc(m.why[0])}${m.why[1]?". "+esc(m.why[1]):""}.</div>
+      <div class="card-skills">${p.skills.map(s=>`<span class="skill-tag">${esc(s)}</span>`).join("")}</div>
+      <div class="pcl-footer">
+        ${acc?'<span class="pcl-sent">REQUEST SENT</span>':`<button class="pcl-btn primary" data-act="accept">${p.role==="mentor"?"ASK":"TEAM UP"}</button><button class="pcl-btn" data-act="pass">PASS</button>`}
+        <button class="pcl-btn" data-act="map">ON MAP</button>
+      </div></div>`;
+  }).join("");
+  el.querySelectorAll(".person-card-list").forEach(row=>spriteCanvas(row.querySelector("canvas"),PEOPLE.find(x=>x.id===+row.dataset.id)));
+  $("#moreBtn").style.display= all.length>shown?"":"none";
+  $("#resetBtn").style.display= state.passed.length?"":"none";
+}
+$("#matchList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const row=b.closest(".person-card-list"); const p=PEOPLE.find(x=>x.id===+row.dataset.id); if(!p) return;
+  const act=b.dataset.act;
+  if(act==="open") openCard(p);
+  else if(act==="accept"){sendRequest(p); renderTeam();}
+  else if(act==="pass"){state.passed.push(p.id); save(); toast(`Passed on ${p.name}`); renderTeam();}
+  else if(act==="map"){switchScreen("map"); requestAnimationFrame(()=>{resize(); centerOn(p,Math.max(2,vw/300)); selected=p; needsDraw=true;});}
+});
+$("#modeMates").onclick=()=>{mode="mates"; shown=3; renderTeam();};
+$("#modeMentors").onclick=()=>{mode="mentors"; shown=3; renderTeam();};
+$("#teamSearch").addEventListener("input",()=>{shown=3; renderTeam();});
+$("#moreBtn").onclick=()=>{shown+=3; renderTeam();};
+$("#resetBtn").onclick=()=>{state.passed=[]; save(); renderTeam(); toast("Passed people are back in the list");};
+
+/* ================= INIT ================= */
+initMe(); initOptions(); initEvent(); renderLegend(); renderTeam();
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{needsDraw=true;});
+requestAnimationFrame(()=>{resize(); requestAnimationFrame(loop);});
+})();
+</script>
+</body>
+</html>
