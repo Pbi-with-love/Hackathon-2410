@@ -3,6 +3,10 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import authRouter from "./routes/auth.js";
+import participantsRouter from "./routes/participants.js";
+import teamsRouter from "./routes/teams.js";
+import mentorsRouter from "./routes/mentors.js";
+import profileRouter from "./routes/profile.js";
 
 const app = express();
 
@@ -17,6 +21,12 @@ app.use(express.json());
 
 // Auth routes
 app.use("/auth", authRouter);
+
+// Resource routes
+app.use("/participants", participantsRouter);
+app.use("/teams", teamsRouter);
+app.use("/mentors", mentorsRouter);
+app.use("/profile", profileRouter);
 
 // Health check
 app.get("/health", (_req, res) => {

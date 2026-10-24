@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth, AuthProvider } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import OnboardingPage from './pages/OnboardingPage';
+import ProfilePage from './pages/ProfilePage';
+import TeamPage from './pages/TeamPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -19,6 +22,14 @@ function AppRoutes() {
       />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route
+        path="/onboarding"
+        element={
+          <PrivateRoute>
+            <OnboardingPage />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/map/teams"
         element={
@@ -39,7 +50,15 @@ function AppRoutes() {
         path="/profile"
         element={
           <PrivateRoute>
-            <div className="p-8 text-gray-700">Profile (coming soon)</div>
+            <ProfilePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/team/:id"
+        element={
+          <PrivateRoute>
+            <TeamPage />
           </PrivateRoute>
         }
       />
