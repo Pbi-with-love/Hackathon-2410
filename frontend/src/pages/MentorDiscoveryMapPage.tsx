@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { apiFetch } from '../lib/api.js';
-import { useAuth } from '../contexts/AuthContext.js';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { apiFetch } from '../lib/api';
+import { useAuth } from '../contexts/AuthContext';
+import { geoToImagePercent, mentorStatusColor, mentorStatusLabel } from '../lib/mapConstants';
+import CampusMap from '../components/CampusMap';
+import HeroSection from '../components/HeroSection';
 
 interface Mentor {
   id: string;
@@ -15,134 +15,30 @@ interface Mentor {
   lng: number;
 }
 
-const TAMPERE_CENTER: [number, number] = [61.4978, 23.761];
-const DEFAULT_ZOOM = 15;
-
-function statusColor(status: Mentor['status']): string {
-  switch (status) {
-    case 'available':
-      return '#22c55e'; // green
-    case 'busy':
-      return '#eab308'; // yellow
-    case 'away':
-      return '#9ca3af'; // grey
-  }
-}
-
-function makeDivIcon(status: Mentor['status']): L.DivIcon {
-  const color = statusColor(status);
-  return L.divIcon({
-    className: '',
-    html: `<div style="
-      width:18px;height:18px;
-      border-radius:50%;
-      background:${color};
-      border:2px solid white;
-      box-shadow:0 1px 4px rgba(0,0,0,0.4);
-    "></div>`,
-    iconSize: [18, 18],
-    iconAnchor: [9, 9],
-    popupAnchor: [0, -12],
-  });
-}
-
 export default function MentorDiscoveryMapPage() {
   const { user } = useAuth();
-  const mapRef = useRef<L.Map | null>(null);
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
-
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [keyword, setKeyword] = useState('');
   const [updating, setUpdating] = useState(false);
-  const [myStatus, setMyStatus] = useState<'available' | 'busy' | 'away'>('available');
+  const [myStatus, setMyStatus] = useState<Mentor['status']>('available');
   const [statusMsg, setStatusMsg] = useState('');
+  const [selected, setSelected] = useState<Mentor | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Find my mentor record if current user is a mentor
   const myMentor = user?.role === 'mentor' ? mentors.find((m) => m.id === user.id) : null;
-
-  // Sync myStatus from loaded mentor data
   useEffect(() => {
     if (myMentor) setMyStatus(myMentor.status);
   }, [myMentor?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Initial load: GET /map/mentors (protected)
   useEffect(() => {
     void (async () => {
       try {
         const res = await apiFetch('/map/mentors');
-        if (res.ok) {
-          const data = (await res.json()) as { mentors: Mentor[] };
-          setMentors(data.mentors);
-        }
-      } catch (err) {
-        console.error('Failed to load mentors', err);
-      }
+        if (res.ok) setMentors(((await res.json()) as { mentors: Mentor[] }).mentors);
+      } catch { /* ignore */ }
     })();
   }, []);
 
-  // Initialise map once
-  useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
-
-    const map = L.map(mapContainerRef.current, {
-      center: TAMPERE_CENTER,
-      zoom: DEFAULT_ZOOM,
-    });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
-
-    mapRef.current = map;
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, []);
-
-  // Update markers whenever mentors list changes
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    // Remove old markers
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-
-    mentors.forEach((mentor) => {
-      const marker = L.marker([mentor.lat, mentor.lng], {
-        icon: makeDivIcon(mentor.status),
-      });
-
-      const expertiseTags = mentor.expertise
-        .map((e) => `<span style="display:inline-block;background:#e0e7ff;color:#3730a3;border-radius:4px;padding:1px 6px;margin:2px;font-size:12px">${e}</span>`)
-        .join('');
-
-      const statusBadgeColor =
-        mentor.status === 'available'
-          ? '#16a34a'
-          : mentor.status === 'busy'
-          ? '#ca8a04'
-          : '#6b7280';
-
-      marker.bindPopup(`
-        <div style="min-width:180px">
-          <strong style="font-size:14px">${mentor.name}</strong>
-          <div style="margin:4px 0">${expertiseTags || '<em>No expertise listed</em>'}</div>
-          ${mentor.experience ? `<div style="font-size:12px;color:#374151;margin-bottom:4px">${mentor.experience}</div>` : ''}
-          <span style="display:inline-block;background:${statusBadgeColor};color:white;border-radius:4px;padding:1px 8px;font-size:12px;text-transform:capitalize">${mentor.status}</span>
-        </div>
-      `);
-
-      marker.addTo(map);
-      markersRef.current.push(marker);
-    });
-  }, [mentors]);
-
-  // Debounced expertise filter — calls GET /mentors?expertise=<keyword>
   const handleKeywordChange = useCallback((value: string) => {
     setKeyword(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -150,23 +46,13 @@ export default function MentorDiscoveryMapPage() {
       try {
         const qs = value.trim() ? `?expertise=${encodeURIComponent(value.trim())}` : '';
         const res = await apiFetch(`/mentors${qs}`);
-        if (res.ok) {
-          const data = (await res.json()) as { mentors: Mentor[] };
-          setMentors(data.mentors);
-        }
-      } catch (err) {
-        console.error('Failed to filter mentors', err);
-      }
+        if (res.ok) setMentors(((await res.json()) as { mentors: Mentor[] }).mentors);
+      } catch { /* ignore */ }
     }, 300);
   }, []);
 
-  // Update my location using geolocation
   const handleUpdateLocation = useCallback(async () => {
-    if (!user || user.role !== 'mentor') return;
-    if (!navigator.geolocation) {
-      setStatusMsg('Geolocation not supported by your browser.');
-      return;
-    }
+    if (!user || user.role !== 'mentor' || !navigator.geolocation) return;
     setUpdating(true);
     setStatusMsg('');
     navigator.geolocation.getCurrentPosition(
@@ -178,90 +64,74 @@ export default function MentorDiscoveryMapPage() {
           });
           if (res.ok) {
             setStatusMsg('Location updated!');
-            // Refresh mentors
             const r2 = await apiFetch('/map/mentors');
-            if (r2.ok) {
-              const data = (await r2.json()) as { mentors: Mentor[] };
-              setMentors(data.mentors);
-            }
-          } else {
-            setStatusMsg('Failed to update location.');
-          }
-        } catch {
-          setStatusMsg('Error updating location.');
-        } finally {
-          setUpdating(false);
-        }
+            if (r2.ok) setMentors(((await r2.json()) as { mentors: Mentor[] }).mentors);
+          } else setStatusMsg('Failed to update location.');
+        } catch { setStatusMsg('Error updating location.'); }
+        finally { setUpdating(false); }
       },
-      () => {
-        setStatusMsg('Could not get your location.');
-        setUpdating(false);
-      }
+      () => { setStatusMsg('Could not get your location.'); setUpdating(false); },
     );
   }, [user]);
 
-  // Update my status
-  const handleStatusChange = useCallback(
-    async (newStatus: 'available' | 'busy' | 'away') => {
-      if (!user || user.role !== 'mentor') return;
-      setMyStatus(newStatus);
-      setStatusMsg('');
-      try {
-        const res = await apiFetch(`/mentors/${user.id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status: newStatus }),
-        });
-        if (res.ok) {
-          setStatusMsg('Status updated!');
-          const r2 = await apiFetch('/map/mentors');
-          if (r2.ok) {
-            const data = (await r2.json()) as { mentors: Mentor[] };
-            setMentors(data.mentors);
-          }
-        } else {
-          setStatusMsg('Failed to update status.');
-        }
-      } catch {
-        setStatusMsg('Error updating status.');
-      }
-    },
-    [user]
-  );
+  const handleStatusChange = useCallback(async (newStatus: Mentor['status']) => {
+    if (!user || user.role !== 'mentor') return;
+    setMyStatus(newStatus);
+    setStatusMsg('');
+    try {
+      const res = await apiFetch(`/mentors/${user.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        setStatusMsg('Status updated!');
+        const r2 = await apiFetch('/map/mentors');
+        if (r2.ok) setMentors(((await r2.json()) as { mentors: Mentor[] }).mentors);
+      } else setStatusMsg('Failed to update status.');
+    } catch { setStatusMsg('Error updating status.'); }
+  }, [user]);
+
+  const statusCounts = useMemo(() => {
+    const c = { available: 0, busy: 0, away: 0 };
+    mentors.forEach((m) => c[m.status]++);
+    return c;
+  }, [mentors]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif' }}>
-      {/* Nav bar */}
-      <nav style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 16px', background: '#1e3a5f', color: 'white' }}>
-        <span style={{ fontWeight: 700, fontSize: 16 }}>Mentor Map</span>
-        <Link to="/map/teams" style={{ color: '#93c5fd', textDecoration: 'none', fontSize: 14 }}>Team Map</Link>
-        <Link to="/profile" style={{ color: '#93c5fd', textDecoration: 'none', fontSize: 14 }}>Profile</Link>
-      </nav>
+    <div className="flex flex-col h-screen" style={{ background: '#1a1814' }}>
+      <HeroSection totalTeams={0} totalParticipants={0} totalMentors={mentors.length} />
 
-      {/* Controls */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: '8px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+      {/* Controls — dark themed */}
+      <div
+        className="flex flex-wrap items-center gap-3 px-4 py-2 flex-shrink-0"
+        style={{ background: '#242019', borderBottom: '1px solid #3a3530' }}
+      >
         <input
           type="text"
           placeholder="Filter by expertise..."
           value={keyword}
           onChange={(e) => handleKeywordChange(e.target.value)}
-          style={{ flex: '1 1 200px', maxWidth: 320, padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14 }}
+          className="flex-1 min-w-[180px] max-w-xs px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600"
+          style={{ background: '#1a1814', border: '1px solid #3a3530', color: '#c4b99a' }}
+          aria-label="Filter mentors by expertise"
         />
 
-        {/* Mentor-only controls */}
         {user?.role === 'mentor' && (
           <>
             <button
               onClick={() => void handleUpdateLocation()}
               disabled={updating}
-              style={{ padding: '6px 14px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 14 }}
+              className="px-4 py-1.5 text-sm rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-opacity cursor-pointer"
+              style={{ background: '#3a3530', color: '#c4b99a', border: '1px solid #5a5040' }}
             >
               {updating ? 'Updating...' : 'Update my location'}
             </button>
-
             <select
               value={myStatus}
-              onChange={(e) => void handleStatusChange(e.target.value as 'available' | 'busy' | 'away')}
-              style={{ padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 14 }}
+              onChange={(e) => void handleStatusChange(e.target.value as Mentor['status'])}
+              className="px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 cursor-pointer"
+              style={{ background: '#1a1814', border: '1px solid #3a3530', color: '#c4b99a' }}
+              aria-label="Set my availability status"
             >
               <option value="available">Available</option>
               <option value="busy">Busy</option>
@@ -270,18 +140,92 @@ export default function MentorDiscoveryMapPage() {
           </>
         )}
 
-        {statusMsg && <span style={{ fontSize: 13, color: statusMsg.includes('!') ? '#16a34a' : '#dc2626' }}>{statusMsg}</span>}
+        {statusMsg && (
+          <span className={`text-xs font-medium ${statusMsg.includes('!') ? 'text-green-400' : 'text-red-400'}`}>
+            {statusMsg}
+          </span>
+        )}
 
         {/* Legend */}
-        <div style={{ display: 'flex', gap: 10, marginLeft: 'auto', fontSize: 12, color: '#475569' }}>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#22c55e', marginRight: 4 }} />Available</span>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#eab308', marginRight: 4 }} />Busy</span>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#9ca3af', marginRight: 4 }} />Away</span>
+        <div className="flex items-center gap-3 ml-auto text-xs" style={{ color: '#8a8070' }}>
+          {(['available', 'busy', 'away'] as const).map((s) => (
+            <span key={s} className="flex items-center gap-1.5">
+              <span className="inline-block w-3 h-3 rounded-full" style={{ background: mentorStatusColor(s) }} />
+              {mentorStatusLabel(s)}
+              {statusCounts[s] > 0 && (
+                <span className="rounded-full px-1.5 font-semibold" style={{ background: '#2a2520', color: '#c4b99a' }}>
+                  {statusCounts[s]}
+                </span>
+              )}
+            </span>
+          ))}
         </div>
       </div>
 
       {/* Map */}
-      <div ref={mapContainerRef} style={{ flex: 1 }} />
+      <div className="flex-1 relative">
+        <CampusMap>
+          {mentors.map((mentor) => {
+            const pos = geoToImagePercent(mentor.lat, mentor.lng);
+            const color = mentorStatusColor(mentor.status);
+            return (
+              <div
+                key={mentor.id}
+                className="absolute cursor-pointer"
+                style={{ left: `${pos.left}%`, top: `${pos.top}%`, transform: 'translate(-50%, -50%)' }}
+                onClick={(e) => { e.stopPropagation(); setSelected(mentor); }}
+              >
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{
+                    background: color,
+                    border: '2px solid rgba(255,255,255,0.7)',
+                    boxShadow: `0 0 10px ${color}80`,
+                  }}
+                />
+              </div>
+            );
+          })}
+        </CampusMap>
+
+        {/* Detail card */}
+        {selected && (
+          <div
+            className="absolute left-4 bottom-4 z-20 rounded-lg shadow-xl max-w-xs"
+            style={{ background: '#242019', border: '1px solid #3a3530', color: '#c4b99a' }}
+          >
+            <div className="flex items-start justify-between p-3 pb-0">
+              <h3 className="font-bold text-sm" style={{ color: '#e8dcc8' }}>{selected.name}</h3>
+              <button
+                onClick={() => setSelected(null)}
+                className="text-xs cursor-pointer ml-2 opacity-60 hover:opacity-100"
+                style={{ color: '#c4b99a' }}
+                aria-label="Close details"
+              >
+                x
+              </button>
+            </div>
+            <div className="p-3 pt-2 text-xs space-y-2">
+              <span
+                className="inline-block rounded-full px-2 py-0.5 text-white font-semibold"
+                style={{ background: mentorStatusColor(selected.status), fontSize: '10px' }}
+              >
+                {mentorStatusLabel(selected.status)}
+              </span>
+              {selected.expertise.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {selected.expertise.map((e) => (
+                    <span key={e} className="rounded-full px-2 py-0.5 font-semibold" style={{ background: '#2a2a4a', color: '#a5b4fc', fontSize: '10px' }}>{e}</span>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: '#5a5040', fontStyle: 'italic' }}>No expertise listed</p>
+              )}
+              {selected.experience && <p style={{ color: '#8a8070', lineHeight: 1.4 }}>{selected.experience}</p>}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

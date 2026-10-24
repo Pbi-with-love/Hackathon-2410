@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase.tsx';
+import { useEffect, useState, useRef } from 'react';
+import { supabase } from '../lib/supabase.ts';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { apiFetch } from '../lib/api.ts';
 
@@ -13,6 +13,23 @@ interface Toast {
 export default function MatchNotifications() {
   const { user } = useAuth();
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const captainTeamIds = useRef<Set<string>>(new Set());
+
+  // Fetch teams where the current user is captain
+  useEffect(() => {
+    if (!user) return;
+    apiFetch('/teams')
+      .then(async (res) => {
+        if (!res.ok) return;
+        const teams = (await res.json()) as Array<{ id: string; captain_id: string }>;
+        captainTeamIds.current = new Set(
+          teams.filter((t) => t.captain_id === user.id).map((t) => t.id)
+        );
+      })
+      .catch(() => {
+        // ignore — notifications will still work for participant matches
+      });
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -26,9 +43,9 @@ export default function MatchNotifications() {
           const row = payload.new as Record<string, unknown>;
           if (!row) return;
 
-          const isForMe =
-            row['participant_id'] === user.id ||
-            (row['direction'] === 'participant_to_team' && row['participant_id'] === user.id);
+          const isParticipant = row['participant_id'] === user.id;
+          const isCaptainOfTeam = captainTeamIds.current.has(row['team_id'] as string);
+          const isForMe = isParticipant || isCaptainOfTeam;
 
           if (!isForMe) return;
 

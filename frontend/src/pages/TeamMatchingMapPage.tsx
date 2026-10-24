@@ -1,220 +1,198 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import L from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useEffect, useState, useMemo } from 'react';
 import { apiFetch } from '../lib/api';
-import SuggestedTeams from '../components/SuggestedTeams.tsx';
+import { useAuth } from '../contexts/AuthContext';
+import { geoToImagePercent } from '../lib/mapConstants';
+import CampusMap from '../components/CampusMap';
+import SuggestedTeams from '../components/SuggestedTeams';
+import HeroSection from '../components/HeroSection';
 
-interface Captain {
-  id: string;
-  name: string;
-}
-
-interface TeamMarker {
-  id: string;
-  name: string;
-  project_idea: string | null;
-  needed_roles: string[];
-  lat: number;
-  lng: number;
-  captain: Captain;
-}
-
-interface ParticipantMarker {
-  id: string;
-  name: string;
-  skills: string[];
-  roles: string[];
-  lat: number;
-  lng: number;
-}
-
-interface MapData {
-  teams: TeamMarker[];
-  participants: ParticipantMarker[];
-}
-
-// Blue square icon for teams
-const teamIcon = L.divIcon({
-  className: '',
-  html: '<div style="width:16px;height:16px;background:#3b82f6;border:2px solid #1d4ed8;border-radius:3px;"></div>',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-  popupAnchor: [0, -10],
-});
-
-// Green circle icon for participants
-const participantIcon = L.divIcon({
-  className: '',
-  html: '<div style="width:14px;height:14px;background:#22c55e;border:2px solid #15803d;border-radius:50%;"></div>',
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-  popupAnchor: [0, -10],
-});
-
-// Tampere University coordinates
-const TAMPERE_CENTER: [number, number] = [61.4978, 23.761];
+interface Captain { id: string; name: string }
+interface TeamMarker { id: string; name: string; project_idea: string | null; needed_roles: string[]; lat: number; lng: number; captain: Captain }
+interface ParticipantMarker { id: string; name: string; skills: string[]; roles: string[]; lat: number; lng: number }
+interface MapData { teams: TeamMarker[]; participants: ParticipantMarker[] }
 
 export default function TeamMatchingMapPage() {
+  const { user } = useAuth();
   const [mapData, setMapData] = useState<MapData>({ teams: [], participants: [] });
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState('');
+  const [selected, setSelected] = useState<TeamMarker | ParticipantMarker | null>(null);
+  const [selectedType, setSelectedType] = useState<'team' | 'participant'>('team');
 
   useEffect(() => {
     apiFetch('/map/teams')
       .then(async (res) => {
-        if (!res.ok) {
-          const body = (await res.json()) as { error: string };
-          throw new Error(body.error ?? 'Failed to load map data');
-        }
+        if (!res.ok) { const b = (await res.json()) as { error: string }; throw new Error(b.error); }
         return res.json() as Promise<MapData>;
       })
-      .then((data) => setMapData(data))
-      .catch((err: unknown) => {
-        const msg = err instanceof Error ? err.message : 'Unknown error';
-        setError(msg);
-      });
+      .then(setMapData)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Failed to load'));
   }, []);
 
+  const filteredTeams = useMemo(() => {
+    if (!filter.trim()) return mapData.teams;
+    const kw = filter.toLowerCase();
+    return mapData.teams.filter(
+      (t) =>
+        t.name.toLowerCase().includes(kw) ||
+        t.needed_roles.some((r) => r.toLowerCase().includes(kw)) ||
+        t.project_idea?.toLowerCase().includes(kw),
+    );
+  }, [mapData.teams, filter]);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      {/* Navigation bar */}
-      <nav
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          padding: '0.5rem 1rem',
-          backgroundColor: '#1e40af',
-          color: '#fff',
-          flexShrink: 0,
-        }}
-      >
-        <span style={{ fontWeight: 700, fontSize: '1rem' }}>Junction Matchmaker</span>
-        <Link to="/map/teams" style={{ color: '#bfdbfe', textDecoration: 'none', fontWeight: 600 }}>
-          Team Map
-        </Link>
-        <Link to="/map/mentors" style={{ color: '#bfdbfe', textDecoration: 'none' }}>
-          Mentor Map
-        </Link>
-        <Link to="/profile" style={{ color: '#bfdbfe', textDecoration: 'none', marginLeft: 'auto' }}>
-          Profile
-        </Link>
-      </nav>
+    <div className="flex flex-col h-screen" style={{ background: '#1a1814' }}>
+      <HeroSection
+        totalTeams={mapData.teams.length}
+        totalParticipants={mapData.participants.length}
+        totalMentors={0}
+      />
 
-      {/* Legend */}
+      {/* Controls bar — dark themed */}
       <div
-        style={{
-          display: 'flex',
-          gap: '1.5rem',
-          padding: '0.4rem 1rem',
-          backgroundColor: '#f8fafc',
-          borderBottom: '1px solid #e2e8f0',
-          fontSize: '0.8rem',
-          flexShrink: 0,
-        }}
+        className="flex flex-wrap items-center gap-3 px-4 py-2 flex-shrink-0"
+        style={{ background: '#242019', borderBottom: '1px solid #3a3530' }}
       >
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <span
-            style={{
-              display: 'inline-block',
-              width: 14,
-              height: 14,
-              background: '#3b82f6',
-              border: '2px solid #1d4ed8',
-              borderRadius: 3,
-            }}
-          />
-          Teams recruiting
-        </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <span
-            style={{
-              display: 'inline-block',
-              width: 12,
-              height: 12,
-              background: '#22c55e',
-              border: '2px solid #15803d',
-              borderRadius: '50%',
-            }}
-          />
-          Looking for team
-        </span>
-        {error && <span style={{ color: '#dc2626', marginLeft: 'auto' }}>Error: {error}</span>}
-      </div>
-
-      {/* Map + suggestions panel */}
-      <div style={{ flex: 1, position: 'relative' }}>
-      <SuggestedTeams />
-      <MapContainer
-        center={TAMPERE_CENTER}
-        zoom={15}
-        style={{ height: '100%', width: '100%' }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        <input
+          type="text"
+          placeholder="Search teams or roles..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="flex-1 min-w-[180px] max-w-xs px-3 py-1.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600"
+          style={{
+            background: '#1a1814',
+            border: '1px solid #3a3530',
+            color: '#c4b99a',
+          }}
+          aria-label="Search teams or roles"
         />
 
-        {mapData.teams.map((team) => (
-          <Marker key={team.id} position={[team.lat, team.lng]} icon={teamIcon}>
-            <Popup>
-              <div style={{ minWidth: 180 }}>
-                <strong style={{ fontSize: '0.95rem' }}>{team.name}</strong>
-                {team.project_idea && (
-                  <p style={{ margin: '0.3rem 0 0', fontSize: '0.82rem', color: '#374151' }}>
-                    {team.project_idea}
-                  </p>
-                )}
-                {team.needed_roles.length > 0 && (
-                  <p style={{ margin: '0.3rem 0 0', fontSize: '0.8rem', color: '#6b7280' }}>
-                    <strong>Needs:</strong> {team.needed_roles.join(', ')}
-                  </p>
-                )}
-                <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: '#9ca3af' }}>
-                  Captain: {team.captain.name}
-                </p>
-                <button
-                  onClick={() => alert('Feature coming in ticket 06')}
-                  style={{
-                    marginTop: '0.5rem',
-                    padding: '0.3rem 0.7rem',
-                    backgroundColor: '#3b82f6',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 4,
-                    cursor: 'pointer',
-                    fontSize: '0.82rem',
-                    width: '100%',
-                  }}
-                >
-                  Request to Join
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {/* Legend */}
+        <div className="flex items-center gap-4 ml-auto text-xs" style={{ color: '#8a8070' }}>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded" style={{ background: '#3b82f6' }} />
+            Teams
+            {filteredTeams.length > 0 && (
+              <span className="rounded-full px-1.5 py-0.5 font-semibold" style={{ background: '#2a2520', color: '#c4b99a' }}>
+                {filteredTeams.length}
+              </span>
+            )}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded-full" style={{ background: '#22c55e' }} />
+            Solo hackers
+            {mapData.participants.length > 0 && (
+              <span className="rounded-full px-1.5 py-0.5 font-semibold" style={{ background: '#2a2520', color: '#c4b99a' }}>
+                {mapData.participants.length}
+              </span>
+            )}
+          </span>
+        </div>
 
-        {mapData.participants.map((p) => (
-          <Marker key={p.id} position={[p.lat, p.lng]} icon={participantIcon}>
-            <Popup>
-              <div style={{ minWidth: 160 }}>
-                <strong style={{ fontSize: '0.95rem' }}>{p.name}</strong>
-                {p.roles.length > 0 && (
-                  <p style={{ margin: '0.3rem 0 0', fontSize: '0.8rem', color: '#374151' }}>
-                    <strong>Roles:</strong> {p.roles.join(', ')}
-                  </p>
-                )}
-                {p.skills.length > 0 && (
-                  <p style={{ margin: '0.3rem 0 0', fontSize: '0.8rem', color: '#374151' }}>
-                    <strong>Skills:</strong> {p.skills.join(', ')}
-                  </p>
-                )}
+        {error && <span className="text-red-400 text-xs font-medium">{error}</span>}
+      </div>
+
+      {/* Map */}
+      <div className="flex-1 relative">
+        {user && <SuggestedTeams />}
+
+        <CampusMap>
+          {/* Team markers */}
+          {filteredTeams.map((team) => {
+            const pos = geoToImagePercent(team.lat, team.lng);
+            return (
+              <div
+                key={team.id}
+                className="absolute cursor-pointer"
+                style={{ left: `${pos.left}%`, top: `${pos.top}%`, transform: 'translate(-50%, -50%)' }}
+                onClick={(e) => { e.stopPropagation(); setSelected(team); setSelectedType('team'); }}
+              >
+                <div
+                  className="w-5 h-5 rounded flex items-center justify-center"
+                  style={{ background: '#3b82f6', border: '2px solid #93c5fd', boxShadow: '0 0 8px rgba(59,130,246,0.5)' }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                  </svg>
+                </div>
               </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+            );
+          })}
+
+          {/* Participant markers */}
+          {mapData.participants.map((p) => {
+            const pos = geoToImagePercent(p.lat, p.lng);
+            return (
+              <div
+                key={p.id}
+                className="absolute cursor-pointer"
+                style={{ left: `${pos.left}%`, top: `${pos.top}%`, transform: 'translate(-50%, -50%)' }}
+                onClick={(e) => { e.stopPropagation(); setSelected(p); setSelectedType('participant'); }}
+              >
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{ background: '#22c55e', border: '2px solid #86efac', boxShadow: '0 0 8px rgba(34,197,94,0.5)' }}
+                />
+              </div>
+            );
+          })}
+        </CampusMap>
+
+        {/* Detail card */}
+        {selected && (
+          <div
+            className="absolute left-4 bottom-4 z-20 rounded-lg shadow-xl max-w-xs"
+            style={{ background: '#242019', border: '1px solid #3a3530', color: '#c4b99a' }}
+          >
+            <div className="flex items-start justify-between p-3 pb-0">
+              <h3 className="font-bold text-sm" style={{ color: '#e8dcc8' }}>
+                {'captain' in selected ? (selected as TeamMarker).name : (selected as ParticipantMarker).name}
+              </h3>
+              <button
+                onClick={() => setSelected(null)}
+                className="text-xs cursor-pointer ml-2 opacity-60 hover:opacity-100"
+                style={{ color: '#c4b99a' }}
+                aria-label="Close details"
+              >
+                x
+              </button>
+            </div>
+            <div className="p-3 pt-2 text-xs space-y-2">
+              {selectedType === 'team' && (() => {
+                const t = selected as TeamMarker;
+                return (
+                  <>
+                    {t.project_idea && <p style={{ color: '#8a8070' }}>{t.project_idea}</p>}
+                    {t.needed_roles.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {t.needed_roles.map((r) => (
+                          <span key={r} className="rounded-full px-2 py-0.5 font-semibold" style={{ background: '#1e3a5f', color: '#93c5fd', fontSize: '10px' }}>{r}</span>
+                        ))}
+                      </div>
+                    )}
+                    <p style={{ color: '#5a5040', fontSize: '10px' }}>Captain: {t.captain.name}</p>
+                  </>
+                );
+              })()}
+              {selectedType === 'participant' && (() => {
+                const p = selected as ParticipantMarker;
+                return (
+                  <>
+                    {p.roles.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {p.roles.map((r) => (
+                          <span key={r} className="rounded-full px-2 py-0.5 font-semibold" style={{ background: '#14532d', color: '#86efac', fontSize: '10px' }}>{r}</span>
+                        ))}
+                      </div>
+                    )}
+                    {p.skills.length > 0 && <p style={{ color: '#8a8070' }}>{p.skills.join(', ')}</p>}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

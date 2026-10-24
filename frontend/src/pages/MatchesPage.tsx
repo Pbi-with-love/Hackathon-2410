@@ -15,8 +15,9 @@ export default function MatchesPage() {
 
   const load = async () => {
     try {
-      const data = await apiFetch('/matches') as unknown as { matches: Match[] };
-      setMatches(data.matches ?? []);
+      const res = await apiFetch('/matches');
+      const data = (await res.json()) as Match[];
+      setMatches(data ?? []);
     } catch {
       // ignore
     } finally {

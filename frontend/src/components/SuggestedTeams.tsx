@@ -22,7 +22,7 @@ export default function SuggestedTeams() {
 
   useEffect(() => {
     if (!user) return;
-    apiFetch(`/suggestions/teams/${user.id}`)
+    apiFetch(`/match/teams/${user.id}`)
       .then(async (res) => {
         if (!res.ok) {
           const body = (await res.json()) as { error: string };
@@ -55,94 +55,56 @@ export default function SuggestedTeams() {
   };
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: '1rem',
-        right: '1rem',
-        width: '20rem',
-        zIndex: 1000,
-        backgroundColor: '#fff',
-        borderRadius: '0.5rem',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-        overflow: 'hidden',
-        fontFamily: 'system-ui, sans-serif',
-      }}
-    >
+    <div className="absolute top-4 right-4 w-80 z-[1000] bg-white rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.18)] overflow-hidden font-sans">
       {/* Header */}
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.6rem 0.9rem',
-          backgroundColor: '#1e40af',
-          color: '#fff',
-          cursor: 'pointer',
-        }}
+        className="flex items-center justify-between px-3.5 py-2.5 bg-blue-800 text-white cursor-pointer"
         onClick={() => setCollapsed((c) => !c)}
       >
-        <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Suggested for you</span>
-        <span style={{ fontSize: '0.8rem' }}>{collapsed ? '▼' : '▲'}</span>
+        <span className="font-bold text-sm">Suggested for you</span>
+        <span className="text-xs">{collapsed ? '\u25BC' : '\u25B2'}</span>
       </div>
 
       {/* Body */}
       {!collapsed && (
-        <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+        <div className="max-h-[70vh] overflow-y-auto">
           {loading && (
-            <p style={{ padding: '0.75rem', fontSize: '0.85rem', color: '#6b7280' }}>
-              Loading suggestions…
+            <p className="p-3 text-sm text-gray-500">
+              Loading suggestions...
             </p>
           )}
           {error && (
-            <p style={{ padding: '0.75rem', fontSize: '0.85rem', color: '#dc2626' }}>
+            <p className="p-3 text-sm text-red-600">
               {error}
             </p>
           )}
           {!loading && !error && suggestions.length === 0 && (
-            <p style={{ padding: '0.75rem', fontSize: '0.85rem', color: '#6b7280' }}>
+            <p className="p-3 text-sm text-gray-500">
               No matching teams found yet.
             </p>
           )}
           {suggestions.map((s) => (
             <div
               key={s.teamId}
-              style={{
-                padding: '0.75rem 0.9rem',
-                borderBottom: '1px solid #e5e7eb',
-              }}
+              className="px-3.5 py-3 border-b border-gray-200"
             >
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#111827' }}>
+              <div className="font-bold text-sm text-gray-900">
                 {s.teamName}
               </div>
               {s.projectIdea && (
                 <div
-                  style={{
-                    fontSize: '0.78rem',
-                    color: '#6b7280',
-                    marginTop: '0.2rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="text-xs text-gray-500 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap"
                   title={s.projectIdea}
                 >
                   {s.projectIdea}
                 </div>
               )}
               {/* Matched roles as green tags */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.4rem' }}>
+              <div className="flex flex-wrap gap-1 mt-1.5">
                 {s.neededRoles.map((role) => (
                   <span
                     key={role}
-                    style={{
-                      backgroundColor: '#dcfce7',
-                      color: '#15803d',
-                      fontSize: '0.7rem',
-                      padding: '0.15rem 0.45rem',
-                      borderRadius: '999px',
-                      fontWeight: 600,
-                    }}
+                    className="bg-green-100 text-green-700 text-[0.7rem] px-2 py-0.5 rounded-full font-semibold"
                   >
                     {role}
                   </span>
@@ -152,25 +114,14 @@ export default function SuggestedTeams() {
               {s.reasons.map((reason, i) => (
                 <div
                   key={i}
-                  style={{ fontSize: '0.75rem', color: '#374151', marginTop: '0.3rem' }}
+                  className="text-xs text-gray-700 mt-1"
                 >
                   {reason}
                 </div>
               ))}
               <button
                 onClick={() => void handleRequestJoin(s.teamId)}
-                style={{
-                  marginTop: '0.55rem',
-                  width: '100%',
-                  padding: '0.35rem 0',
-                  backgroundColor: '#3b82f6',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '0.3rem',
-                  cursor: 'pointer',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                }}
+                className="mt-2 w-full py-1.5 bg-blue-500 text-white rounded text-sm font-semibold hover:bg-blue-600"
               >
                 Request to Join
               </button>

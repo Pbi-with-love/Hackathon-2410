@@ -1,12 +1,22 @@
 import { Router, Request, Response } from 'express';
 import { query } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { cacheGet, cacheSet } from '../cache.js';
+
+const CACHE_TTL = 10; // seconds
 
 const router = Router();
 
 // GET /map/teams — returns open teams with lat/lng and looking participants with lat/lng
 router.get('/teams', requireAuth, async (_req: Request, res: Response): Promise<void> => {
   try {
+    const cacheKey = 'map:teams';
+    const cached = await cacheGet<{ teams: unknown[]; participants: unknown[] }>(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
     const participantsResult = await query(
       `SELECT id, name, skills, roles, lat, lng
        FROM participants
@@ -47,7 +57,9 @@ router.get('/teams', requireAuth, async (_req: Request, res: Response): Promise<
       lng: row.lng as number,
     }));
 
-    res.json({ teams, participants });
+    const body = { teams, participants };
+    await cacheSet(cacheKey, body, CACHE_TTL);
+    res.json(body);
   } catch (err) {
     console.error('GET /map/teams error', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -55,15 +67,24 @@ router.get('/teams', requireAuth, async (_req: Request, res: Response): Promise<
 });
 
 // GET /map/mentors — protected, returns all mentors with lat/lng for map initial load
-router.get('/mentors', requireAuth, async (_req: Request, res: Response): Promise<void> => {
+// Supports optional ?expertise=<keyword> for case-insensitive substring filtering
+router.get('/mentors', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
+    const expertiseFilter = typeof req.query.expertise === 'string' ? req.query.expertise.trim() : '';
+    const cacheKey = expertiseFilter ? `map:mentors:${expertiseFilter.toLowerCase()}` : 'map:mentors';
+    const cached = await cacheGet<{ mentors: unknown[] }>(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
     const result = await query(
       `SELECT id, name, expertise, experience, status, lat, lng
        FROM mentors
        WHERE lat IS NOT NULL AND lng IS NOT NULL`
     );
 
-    const mentors = result.rows.map((row) => ({
+    let mentors = result.rows.map((row) => ({
       id: row.id as string,
       name: row.name as string,
       expertise: row.expertise as string[],
@@ -73,7 +94,16 @@ router.get('/mentors', requireAuth, async (_req: Request, res: Response): Promis
       lng: row.lng as number,
     }));
 
-    res.json({ mentors });
+    if (expertiseFilter) {
+      const lowerFilter = expertiseFilter.toLowerCase();
+      mentors = mentors.filter((m) =>
+        m.expertise.some((e) => e.toLowerCase().includes(lowerFilter))
+      );
+    }
+
+    const body = { mentors };
+    await cacheSet(cacheKey, body, CACHE_TTL);
+    res.json(body);
   } catch (err) {
     console.error('GET /map/mentors error', err);
     res.status(500).json({ error: 'Internal server error' });

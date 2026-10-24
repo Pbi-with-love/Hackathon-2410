@@ -32,7 +32,7 @@ app.use("/mentors", mentorsRouter);
 app.use("/profile", profileRouter);
 app.use("/map", mapRouter);
 app.use("/match", matchRouter);
-app.use("/suggestions", suggestionsRouter);
+app.use("/match", suggestionsRouter);
 
 // Health check
 app.get("/health", (_req, res) => {
