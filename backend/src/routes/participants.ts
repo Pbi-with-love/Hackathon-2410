@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { query } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { cacheGet, cacheSet, cacheInvalidate } from '../cache.js';
 
 const router = Router();
 
@@ -18,6 +19,15 @@ const UpdateParticipantSchema = z.object({
 // GET /participants/:id
 router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params as { id: string };
+  const cacheKey = `participant:${id}`;
+
+  const cached = await cacheGet<{ id: string }>(cacheKey);
+  if (cached) {
+    console.debug(`[cache] hit ${cacheKey}`);
+    res.json({ participant: cached });
+    return;
+  }
+  console.debug(`[cache] miss ${cacheKey}`);
 
   try {
     const result = await query(
@@ -31,6 +41,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<voi
       return;
     }
 
+    await cacheSet(cacheKey, result.rows[0], 300);
     res.json({ participant: result.rows[0] });
   } catch (err) {
     console.error('GET /participants/:id error', err);
@@ -107,6 +118,7 @@ router.patch('/:id', requireAuth, async (req: Request, res: Response): Promise<v
       return;
     }
 
+    await cacheInvalidate(`participant:${id}`);
     res.json({ participant: result.rows[0] });
   } catch (err) {
     console.error('PATCH /participants/:id error', err);

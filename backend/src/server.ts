@@ -8,6 +8,7 @@ import teamsRouter from "./routes/teams.js";
 import mentorsRouter from "./routes/mentors.js";
 import profileRouter from "./routes/profile.js";
 import mapRouter from "./routes/map.js";
+import matchRouter from "./routes/matches.js";
 
 const app = express();
 

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { query } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { cacheGet, cacheSet, cacheInvalidate } from '../cache.js';
 
 const router = Router();
 
@@ -71,6 +72,15 @@ router.post('/', requireAuth, async (req: Request, res: Response): Promise<void>
 // GET /teams/:id
 router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params as { id: string };
+  const cacheKey = `team:${id}`;
+
+  const cached = await cacheGet<Record<string, unknown>>(cacheKey);
+  if (cached) {
+    console.debug(`[cache] hit ${cacheKey}`);
+    res.json({ team: cached });
+    return;
+  }
+  console.debug(`[cache] miss ${cacheKey}`);
 
   try {
     const result = await query(
@@ -86,6 +96,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<voi
       return;
     }
 
+    await cacheSet(cacheKey, result.rows[0], 300);
     res.json({ team: result.rows[0] });
   } catch (err) {
     console.error('GET /teams/:id error', err);
@@ -162,6 +173,7 @@ router.patch('/:id', requireAuth, async (req: Request, res: Response): Promise<v
       values
     );
 
+    await cacheInvalidate(`team:${id}`, `team:${id}:members`);
     res.json({ team: result.rows[0] });
   } catch (err) {
     console.error('PATCH /teams/:id error', err);
@@ -172,6 +184,15 @@ router.patch('/:id', requireAuth, async (req: Request, res: Response): Promise<v
 // GET /teams/:id/members
 router.get('/:id/members', requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params as { id: string };
+  const cacheKey = `team:${id}:members`;
+
+  const cached = await cacheGet<unknown[]>(cacheKey);
+  if (cached) {
+    console.debug(`[cache] hit ${cacheKey}`);
+    res.json({ members: cached });
+    return;
+  }
+  console.debug(`[cache] miss ${cacheKey}`);
 
   try {
     const teamResult = await query(`SELECT id FROM teams WHERE id = $1`, [id]);
@@ -189,6 +210,7 @@ router.get('/:id/members', requireAuth, async (req: Request, res: Response): Pro
       [id]
     );
 
+    await cacheSet(cacheKey, result.rows, 300);
     res.json({ members: result.rows });
   } catch (err) {
     console.error('GET /teams/:id/members error', err);
