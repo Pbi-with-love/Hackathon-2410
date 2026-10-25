@@ -49,7 +49,11 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
       headers.set('Authorization', `Bearer ${newToken}`);
       return fetch(`${BASE_URL}${path}`, { ...options, headers });
     }
-    // attemptRefresh already clears storage and redirects to /login on failure
+    // No refresh token or refresh failed — clear stale session and redirect
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('authUser');
+    window.location.href = '/login';
   }
 
   return res;

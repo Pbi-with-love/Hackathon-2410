@@ -29,6 +29,37 @@ export default function MentorDiscoveryMapPage() {
   const [selected, setSelected] = useState<Mentor | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /* User geolocation — real-time tracking with profile fallback */
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => { /* geolocation failed — fallback handled below */ },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  /* Fallback: use saved profile location when live geolocation is unavailable */
+  useEffect(() => {
+    if (userLocation) return;
+    if (!user) return;
+    const endpoint = user.role === 'mentor' ? `/mentors/${user.id}` : `/participants/${user.id}`;
+    const key = user.role === 'mentor' ? 'mentor' : 'participant';
+    apiFetch(endpoint)
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = (await res.json()) as Record<string, { lat: string | null; lng: string | null }>;
+        const record = data[key];
+        const lat = record?.lat ? parseFloat(record.lat) : null;
+        const lng = record?.lng ? parseFloat(record.lng) : null;
+        if (lat && lng) setUserLocation({ lat, lng });
+      })
+      .catch(() => { /* no fallback available */ });
+  }, [userLocation, user]);
+
   const myMentor = user?.role === 'mentor' ? mentors.find((m) => m.id === user.id) : null;
   useEffect(() => {
     if (myMentor) setMyStatus(myMentor.status);
@@ -107,16 +138,18 @@ export default function MentorDiscoveryMapPage() {
   }, [mentors]);
 
   const mentorMarkers: MapMarker[] = useMemo(() =>
-    filteredMentors.map(m => ({
-      id: m.id,
-      name: m.name,
-      lat: m.lat,
-      lng: m.lng,
-      role: 'Mentor',
-      type: 'mentor' as const,
-      status: m.status,
-    })),
-    [filteredMentors]
+    filteredMentors
+      .filter((m) => !(userLocation && user && m.id === user.id))
+      .map(m => ({
+        id: m.id,
+        name: m.name,
+        lat: m.lat,
+        lng: m.lng,
+        role: 'Mentor',
+        type: 'mentor' as const,
+        status: m.status,
+      })),
+    [filteredMentors, userLocation, user]
   );
 
   const handleMarkerClick = useCallback((marker: MapMarker) => {
@@ -326,6 +359,7 @@ export default function MentorDiscoveryMapPage() {
             markers={mentorMarkers}
             onMarkerClick={handleMarkerClick}
             selectedId={selected?.id ?? null}
+            userLocation={userLocation}
           />
         </div>
 

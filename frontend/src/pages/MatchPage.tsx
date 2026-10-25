@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { apiFetch } from '../lib/api';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -21,12 +22,32 @@ interface ProfileChips {
 }
 
 interface TeamCard {
+  id: string;
   name: string;
   fit: number;
   challenge: string;
-  missing: string[];
+  needed_roles: string[];
   reason: string;
   members: number;
+  max_size: number;
+  zone: string | null;
+  factors: { interest: number; role: number; avail: number };
+  matched_role: string | null;
+}
+
+interface ApiProfile {
+  idea: string | null;
+  interests: string[];
+  skills: string[];
+  roles: string[];
+  availability: string | null;
+  synonyms: string[];
+}
+
+interface MatchResponse {
+  profile: ApiProfile;
+  results: TeamCard[];
+  meta: { candidates: number; weights: Record<string, number>; ms: number; fallback: boolean };
 }
 
 /* ------------------------------------------------------------------ */
@@ -77,36 +98,12 @@ function SkeletonCard() {
 /*  Mock data                                                          */
 /* ------------------------------------------------------------------ */
 
-const MOCK_TEAMS: TeamCard[] = [
-  { name: 'SmartFlow', fit: 92, challenge: 'Smart City', missing: ['Frontend Dev', 'ML Engineer', 'UX Designer'], reason: "This team needs a Frontend Dev -- that's your top skill", members: 2 },
-  { name: 'GreenGrid', fit: 87, challenge: 'Sustainability', missing: ['Frontend Dev', 'Backend Dev', 'PM'], reason: 'You fill their Frontend gap and share sustainability interests', members: 2 },
-  { name: 'LearnLoop', fit: 78, challenge: 'Education', missing: ['ML Engineer', 'Backend Dev', 'UX Designer'], reason: 'Your ML background complements their adaptive learning platform', members: 2 },
-  { name: 'CarbonTrace', fit: 71, challenge: 'Climate', missing: ['Backend Dev', 'Frontend Dev', 'DevOps'], reason: 'Strong skill overlap in frontend -- they need someone like you', members: 3 },
-  { name: 'MindBridge', fit: 65, challenge: 'Health Tech', missing: ['Mobile Dev', 'UX Designer', 'Data Scientist'], reason: 'Your UX skills would strengthen their health check-in app', members: 2 },
-];
-
-const MOCK_PEOPLE = [
-  { name: 'Mika T.', skills: ['Backend Dev', 'DevOps'], looking: 'ML project' },
-  { name: 'Sana R.', skills: ['UX Designer'], looking: 'Sustainability team' },
-  { name: 'Leo K.', skills: ['ML Engineer', 'Data Scientist'], looking: 'Health Tech' },
-  { name: 'Priya D.', skills: ['Frontend Dev', 'Mobile Dev'], looking: 'Education project' },
-  { name: 'Jens M.', skills: ['Backend Dev', 'PM'], looking: 'Smart City team' },
-  { name: 'Aiko S.', skills: ['UX Designer', 'Frontend Dev'], looking: 'Climate project' },
-  { name: 'Omar F.', skills: ['DevOps', 'Backend Dev'], looking: 'Any team' },
-  { name: 'Yuki W.', skills: ['ML Engineer'], looking: 'Health Tech' },
-  { name: 'Elena P.', skills: ['Data Scientist', 'ML Engineer'], looking: 'Smart City' },
-  { name: 'Tom B.', skills: ['Frontend Dev'], looking: 'Education team' },
-  { name: 'Rani G.', skills: ['Mobile Dev', 'UX Designer'], looking: 'Sustainability' },
-  { name: 'Max L.', skills: ['PM', 'Backend Dev'], looking: 'Any project' },
-];
-
 const SUGGESTED_PROMPTS = [
   "I'm a frontend dev looking for a sustainability project",
   'I want to build an AI-powered education tool',
   'I have experience in ML and want to join a health-tech team',
 ];
 
-const USER_ROLE = 'Frontend Dev';
 
 /* ------------------------------------------------------------------ */
 /*  Editable Chip                                                      */
@@ -235,9 +232,41 @@ export default function MatchPage() {
 
   /* ---- Results ---- */
   const [activeTab, setActiveTab] = useState<'teams' | 'people'>('teams');
-  const [visibleTeams, setVisibleTeams] = useState(3);
+  const [sortMode, setSortMode] = useState<'best' | 'all'>('best');
+  const [visibleTeams, setVisibleTeams] = useState(5);
   const [joinedTeams, setJoinedTeams] = useState<Set<string>>(new Set());
   const [skippedTeams, setSkippedTeams] = useState<Set<string>>(new Set());
+  const [teamResults, setTeamResults] = useState<TeamCard[]>([]);
+  const [allTeams, setAllTeams] = useState<TeamCard[]>([]);
+  const [apiProfile, setApiProfile] = useState<ApiProfile | null>(null);
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [excludeIds, setExcludeIds] = useState<string[]>([]);
+  const [weights, setWeights] = useState<Record<string, number> | null>(null);
+  const [isFallback, setIsFallback] = useState(false);
+
+  /* Fetch all teams on mount for "All teams" mode */
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await apiFetch('/map/teams');
+        if (!res.ok) return;
+        const data = (await res.json()) as { teams: Array<{ id: string; name: string; project_idea: string | null; needed_roles: string[]; lat: number; lng: number; captain: { id: string; name: string } }> };
+        setAllTeams(data.teams.map(t => ({
+          id: t.id,
+          name: t.name,
+          fit: 0,
+          challenge: '',
+          needed_roles: t.needed_roles,
+          reason: t.project_idea || '',
+          members: 0,
+          max_size: 5,
+          zone: null,
+          factors: { interest: 0, role: 0, avail: 0 },
+          matched_role: null,
+        })));
+      } catch { /* ignore */ }
+    })();
+  }, []);
 
   /* auto-scroll chat */
   useEffect(() => {
@@ -246,36 +275,123 @@ export default function MatchPage() {
 
   const nextId = () => Math.max(0, ...messages.map((m) => m.id)) + 1;
 
+  /* Call the real API */
+  const callMatchApi = useCallback(async (prompt: string, profile: ApiProfile | null, extras?: { exclude_ids?: string[]; weights?: Record<string, number> }) => {
+    setMatchLoading(true);
+    try {
+      const res = await apiFetch('/api/match', {
+        method: 'POST',
+        body: JSON.stringify({
+          prompt: profile ? '' : prompt,
+          profile,
+          target: 'teams',
+          exclude_ids: extras?.exclude_ids || excludeIds,
+          feedback: { weights: extras?.weights || weights, declined: [] },
+          limit: 5,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = (await res.json()) as { error: string };
+        throw new Error(err.error || 'Match failed');
+      }
+
+      const data = (await res.json()) as MatchResponse;
+      setApiProfile(data.profile);
+      setTeamResults((prev) => [...prev, ...data.results]);
+      setIsFallback(data.meta.fallback);
+      if (data.meta.weights) setWeights(data.meta.weights);
+
+      return data;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[match]', msg);
+      // Show error in chat
+      setMessages((prev) => [...prev, {
+        id: Date.now(),
+        role: 'ai' as const,
+        text: `Matching failed: ${msg}. Please try again.`,
+      }]);
+      return null;
+    } finally {
+      setMatchLoading(false);
+    }
+  }, [excludeIds, weights]);
+
   function handleSend(text?: string) {
     const msg = (text ?? input).trim();
     if (!msg) return;
     setInput('');
 
-    const userMsg: ChatMessage = { id: nextId(), role: 'user', text: msg };
-    const aiReply: ChatMessage = {
-      id: nextId() + 1,
-      role: 'ai',
-      text: "Here's what I picked up:",
-      chips: {
-        idea: 'Sustainability dashboard',
-        skills: ['React', 'TypeScript', 'Tailwind CSS'],
-        role: 'Frontend Dev',
-        interests: ['Green tech', 'Data viz'],
-      },
-      showMatchButton: true,
-    };
+    // Clear previous results for a fresh search
+    setTeamResults([]);
+    setExcludeIds([]);
+    setSkippedTeams(new Set());
+    setJoinedTeams(new Set());
+    setHasMatched(false);
+    setIsFallback(false);
 
-    setMessages((prev) => [...prev, userMsg, aiReply]);
+    const userMsg: ChatMessage = { id: nextId(), role: 'user', text: msg };
+    const loadingMsg: ChatMessage = { id: nextId() + 1, role: 'ai', text: 'Analyzing your profile...' };
+    setMessages((prev) => [...prev, userMsg, loadingMsg]);
+
+    // Call API
+    void callMatchApi(msg, null).then((data) => {
+      if (data) {
+        const profile = data.profile;
+        const aiReply: ChatMessage = {
+          id: nextId() + 2,
+          role: 'ai',
+          text: "Here's what I picked up:",
+          chips: {
+            idea: profile.idea || '',
+            skills: profile.skills || [],
+            role: profile.roles?.[0] || '',
+            interests: profile.interests || [],
+          },
+          showMatchButton: true,
+        };
+        // Replace loading message with real reply
+        setMessages((prev) => [...prev.filter((m) => m.text !== 'Analyzing your profile...'), aiReply]);
+        setHasMatched(true);
+      } else {
+        setMessages((prev) => [...prev.filter((m) => m.text !== 'Analyzing your profile...'), {
+          id: nextId() + 2,
+          role: 'ai' as const,
+          text: 'Sorry, matching failed. Try again or browse the team map.',
+        }]);
+      }
+    });
   }
 
   function handleMatch() {
-    setHasMatched(true);
-    const confirmMsg: ChatMessage = {
-      id: nextId(),
-      role: 'ai',
-      text: 'Great -- I found some teams that fit your profile. Check the results panel on the right.',
-    };
-    setMessages((prev) => [...prev, confirmMsg]);
+    // Re-match with edited chips (profile already set from first call)
+    const lastChips = messages.findLast((m) => m.chips)?.chips;
+    if (lastChips && apiProfile) {
+      const editedProfile: ApiProfile = {
+        ...apiProfile,
+        idea: lastChips.idea || apiProfile.idea,
+        skills: lastChips.skills.length > 0 ? lastChips.skills : apiProfile.skills,
+        roles: lastChips.role ? [lastChips.role, ...(apiProfile.roles?.slice(1) || [])] : apiProfile.roles,
+        interests: lastChips.interests.length > 0 ? lastChips.interests : apiProfile.interests,
+      };
+      setTeamResults([]);
+      void callMatchApi('', editedProfile).then((data) => {
+        if (data) {
+          setHasMatched(true);
+          const confirmMsg: ChatMessage = {
+            id: nextId(),
+            role: 'ai',
+            text: data.meta.fallback
+              ? 'Showing keyword-based results (AI matching is warming up).'
+              : `Found ${data.results.length} teams from ${data.meta.candidates} candidates in ${(data.meta.ms / 1000).toFixed(1)}s.`,
+          };
+          setMessages((prev) => [...prev, confirmMsg]);
+        }
+      });
+    } else {
+      setHasMatched(true);
+    }
   }
 
   function handleChipChange(msgId: number, field: keyof ProfileChips, index: number | null, value: string) {
@@ -310,15 +426,27 @@ export default function MatchPage() {
     );
   }
 
-  function handleJoin(teamName: string) {
-    setJoinedTeams((prev) => new Set(prev).add(teamName));
+  function handleJoin(teamId: string) {
+    setJoinedTeams((prev) => new Set(prev).add(teamId));
+    // Actually send the join request
+    void apiFetch('/match/request', {
+      method: 'POST',
+      body: JSON.stringify({ teamId }),
+    });
   }
 
-  function handleSkip(teamName: string) {
-    setSkippedTeams((prev) => new Set(prev).add(teamName));
+  function handleSkip(teamId: string) {
+    setSkippedTeams((prev) => new Set(prev).add(teamId));
+    setExcludeIds((prev) => [...prev, teamId]);
   }
 
-  const filteredTeams = MOCK_TEAMS.filter((t) => !skippedTeams.has(t.name));
+  function handleShowMore() {
+    const currentIds = teamResults.map((t) => t.id);
+    void callMatchApi('', apiProfile, { exclude_ids: currentIds });
+  }
+
+  const displayTeams = sortMode === 'all' ? allTeams : teamResults;
+  const filteredTeams = displayTeams.filter((t) => !skippedTeams.has(t.id));
 
   /* ---------------------------------------------------------------- */
   /*  Render                                                           */
@@ -328,103 +456,140 @@ export default function MatchPage() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--ground)' }}>
       {/* ============ IMPORT BAR ============ */}
       <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px' }}>
-          <button
-            onClick={() => setImportOpen(!importOpen)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              padding: 0,
-              textAlign: 'left',
-              cursor: 'pointer',
-              fontFamily: 'var(--meta)',
-              fontSize: 12,
-              color: 'var(--accent)',
-              letterSpacing: '.04em',
-            }}
-          >
-            {importOpen ? 'v' : '>'} IMPORT CV / PROFILE
-          </button>
+        {/* Toggle row */}
+        <button
+          onClick={() => setImportOpen(!importOpen)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            width: '100%',
+            padding: '10px 24px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: importOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}>
+            <path d="M3 1l4 4-4 4" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span style={{ fontFamily: 'var(--meta)', fontSize: 12, color: 'var(--accent)', letterSpacing: '0.04em' }}>
+            IMPORT CV / PROFILE
+          </span>
           {!importOpen && (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontFamily: 'var(--meta)',
-                fontSize: 11,
-                color: 'var(--muted)',
-                letterSpacing: '.02em',
-              }}
-            >
-              <UploadIcon /> Upload a CV or paste a link
+            <span style={{ fontFamily: 'var(--body)', fontSize: 13, color: 'var(--faint)', marginLeft: 4 }}>
+              Upload a resume or paste a link to auto-fill your profile
             </span>
           )}
-        </div>
+        </button>
 
+        {/* Expanded import form */}
         {importOpen && (
-          <div style={{ padding: '0 16px 12px', display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            {/* CV drop area */}
-            <div style={{ flex: '1 1 160px', minWidth: 140 }}>
-              <span className="field-label" style={{ marginBottom: 4 }}>CV</span>
-              <div
-                style={{
-                  border: '1px dashed var(--border)',
-                  background: 'var(--raised)',
-                  padding: '14px 12px',
-                  fontFamily: 'var(--sans)',
-                  fontSize: 13,
-                  color: 'var(--muted)',
-                  textAlign: 'center',
-                }}
-              >
-                Drop PDF here
+          <div style={{ padding: '0 24px 20px' }}>
+            {/* Row 1: CV drop + URL inputs */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
+              {/* CV drop zone */}
+              <div>
+                <span className="field-label">Resume / CV</span>
+                <div
+                  style={{
+                    border: '1px dashed var(--control-border)',
+                    background: 'var(--raised)',
+                    height: 'var(--control-height)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--body)',
+                    fontSize: 13,
+                    color: 'var(--muted)',
+                  }}
+                >
+                  <UploadIcon />
+                  Drop PDF or click to browse
+                </div>
+              </div>
+
+              {/* LinkedIn */}
+              <div>
+                <span className="field-label">LinkedIn</span>
+                <input
+                  type="text"
+                  value={linkedinUrl}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  placeholder="linkedin.com/in/your-name"
+                  style={{
+                    width: '100%',
+                    height: 'var(--control-height)',
+                    background: 'var(--raised)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    fontFamily: 'var(--body)',
+                    fontSize: 13,
+                    padding: '0 12px',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; }}
+                  onBlur={(e) => { e.target.style.borderColor = 'var(--border)'; }}
+                />
+              </div>
+
+              {/* GitHub */}
+              <div>
+                <span className="field-label">GitHub</span>
+                <input
+                  type="text"
+                  value={githubUrl}
+                  onChange={(e) => setGithubUrl(e.target.value)}
+                  placeholder="github.com/your-username"
+                  style={{
+                    width: '100%',
+                    height: 'var(--control-height)',
+                    background: 'var(--raised)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    fontFamily: 'var(--body)',
+                    fontSize: 13,
+                    padding: '0 12px',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; }}
+                  onBlur={(e) => { e.target.style.borderColor = 'var(--border)'; }}
+                />
               </div>
             </div>
 
-            {/* LinkedIn */}
-            <div style={{ flex: '1 1 180px', minWidth: 140 }}>
-              <span className="field-label" style={{ marginBottom: 4 }}>LINKEDIN URL</span>
-              <input
-                type="text"
-                value={linkedinUrl}
-                onChange={(e) => setLinkedinUrl(e.target.value)}
-                placeholder="https://linkedin.com/in/..."
-                className="field-input"
-                style={{ marginBottom: 0 }}
-              />
-            </div>
-
-            {/* GitHub */}
-            <div style={{ flex: '1 1 180px', minWidth: 140 }}>
-              <span className="field-label" style={{ marginBottom: 4 }}>GITHUB URL</span>
-              <input
-                type="text"
-                value={githubUrl}
-                onChange={(e) => setGithubUrl(e.target.value)}
-                placeholder="https://github.com/..."
-                className="field-input"
-                style={{ marginBottom: 0 }}
-              />
-            </div>
-
-            {/* Challenge + role */}
-            <div style={{ flex: '2 1 240px', minWidth: 180 }}>
-              <span className="field-label" style={{ marginBottom: 4 }}>CHALLENGE / ROLE</span>
-              <textarea
-                rows={2}
-                value={challengeRole}
-                onChange={(e) => setChallengeRole(e.target.value)}
-                placeholder="e.g. Smart City challenge, looking for Frontend Dev role"
-                className="field-input"
-                style={{ marginBottom: 0, resize: 'none' }}
-              />
-            </div>
-
-            {/* Import button */}
-            <div style={{ flexShrink: 0 }}>
-              <button className="pixel-btn primary" style={{ padding: '10px 18px', fontSize: 12 }}>
-                IMPORT
+            {/* Row 2: Challenge/role + Import button */}
+            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end' }}>
+              <div style={{ flex: 1 }}>
+                <span className="field-label">Challenge you picked + your role</span>
+                <input
+                  type="text"
+                  value={challengeRole}
+                  onChange={(e) => setChallengeRole(e.target.value)}
+                  placeholder="e.g. Smart City challenge, Frontend Dev role"
+                  style={{
+                    width: '100%',
+                    height: 'var(--control-height)',
+                    background: 'var(--raised)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    fontFamily: 'var(--body)',
+                    fontSize: 13,
+                    padding: '0 12px',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; }}
+                  onBlur={(e) => { e.target.style.borderColor = 'var(--border)'; }}
+                />
+              </div>
+              <button
+                className="btn primary"
+                style={{ height: 'var(--control-height)', padding: '0 24px', fontSize: 12, flexShrink: 0 }}
+              >
+                Import
               </button>
             </div>
           </div>
@@ -655,7 +820,7 @@ export default function MatchPage() {
                   whiteSpace: 'nowrap',
                 }}
               >
-                TEAMS{hasMatched ? ` ${filteredTeams.length}` : ''}
+                TEAMS{hasMatched ? ` ${teamResults.length}` : ''}
               </button>
               <button
                 onClick={() => setActiveTab('people')}
@@ -672,11 +837,13 @@ export default function MatchPage() {
                   whiteSpace: 'nowrap',
                 }}
               >
-                PEOPLE{hasMatched ? ` ${MOCK_PEOPLE.length}` : ''}
+                PEOPLE
               </button>
             </div>
 
             <select
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value as 'best' | 'all')}
               style={{
                 background: 'var(--raised)',
                 border: '1px solid var(--border)',
@@ -688,15 +855,14 @@ export default function MatchPage() {
                 flexShrink: 0,
               }}
             >
-              <option>Best fit</option>
-              <option>Newest</option>
-              <option>Most members</option>
+              <option value="best">Best fit</option>
+              <option value="all">All teams</option>
             </select>
           </div>
 
           {/* Scrollable content */}
           <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--panel-pad)' }}>
-            {!hasMatched && (
+            {!hasMatched && sortMode === 'best' && (
               <div
                 style={{
                   display: 'flex',
@@ -725,43 +891,52 @@ export default function MatchPage() {
               </div>
             )}
 
-            {hasMatched && activeTab === 'teams' && (
+            {(hasMatched || sortMode === 'all') && activeTab === 'teams' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {matchLoading && teamResults.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: 32, color: 'var(--muted)', fontFamily: 'var(--body)', fontSize: 14 }}>
+                    Matching...
+                  </div>
+                )}
+
                 {filteredTeams.slice(0, visibleTeams).map((team) => {
-                  const joined = joinedTeams.has(team.name);
+                  const joined = joinedTeams.has(team.id);
+                  const matchedRole = team.matched_role?.toLowerCase();
                   return (
-                    <div key={team.name} className="card">
+                    <div key={team.id} className="card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                         <div>
-                          <div style={{ fontFamily: 'var(--body)', fontSize: 14, color: 'var(--text)', marginBottom: 4 }}>
+                          <div style={{ fontFamily: 'var(--body)', fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 4 }}>
                             {team.name}
                           </div>
                           <div style={{ fontFamily: 'var(--body)', fontSize: 13, color: 'var(--muted)' }}>
-                            {team.challenge} -- {team.members} members
+                            {team.challenge || 'Open challenge'} — {team.members}/{team.max_size} members
                           </div>
                         </div>
-                        <div
-                          style={{
-                            fontFamily: 'var(--meta)',
-                            fontSize: 18,
-                            color: 'var(--accent)',
-                            lineHeight: 1,
-                            flexShrink: 0,
-                            marginLeft: 12,
-                          }}
-                        >
-                          {team.fit}%
-                        </div>
+                        {sortMode === 'best' && (
+                          <div
+                            className="num"
+                            style={{
+                              fontSize: 20,
+                              color: 'var(--accent)',
+                              lineHeight: 1,
+                              flexShrink: 0,
+                              marginLeft: 12,
+                            }}
+                          >
+                            {team.fit}%
+                          </div>
+                        )}
                       </div>
 
-                      {/* Missing roles */}
+                      {/* Needed roles — highlight the matched one */}
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
-                        {team.missing.map((role) => (
+                        {team.needed_roles.map((role) => (
                           <span
                             key={role}
                             className="skill-tag"
                             style={
-                              role === USER_ROLE
+                              matchedRole && role.toLowerCase() === matchedRole
                                 ? { background: 'var(--accent)', color: 'var(--ink)', borderColor: 'var(--accent)' }
                                 : {}
                             }
@@ -774,7 +949,7 @@ export default function MatchPage() {
                       {/* Reason */}
                       <p
                         style={{
-                          fontFamily: 'var(--sans)',
+                          fontFamily: 'var(--body)',
                           fontSize: 13,
                           color: 'var(--muted)',
                           fontStyle: 'italic',
@@ -802,59 +977,65 @@ export default function MatchPage() {
                           </span>
                         ) : (
                           <button
-                            className="pixel-btn primary"
+                            className="btn primary"
                             style={{ fontSize: 12, padding: '6px 10px' }}
-                            onClick={() => handleJoin(team.name)}
+                            onClick={() => handleJoin(team.id)}
                           >
-                            REQUEST TO JOIN
+                            Request to join
                           </button>
                         )}
                         <button
-                          className="pixel-btn"
+                          className="btn"
                           style={{ fontSize: 12, padding: '6px 10px' }}
-                          onClick={() => handleSkip(team.name)}
+                          onClick={() => handleSkip(team.id)}
                         >
-                          SKIP
+                          Skip
                         </button>
                         <Link
-                          to="/map/teams"
-                          className="pixel-btn"
+                          to={`/map/teams?select=${team.id}`}
+                          className="btn"
                           style={{ fontSize: 12, padding: '6px 10px', textDecoration: 'none', display: 'inline-block' }}
                         >
-                          SHOW ON MAP
+                          Show on map
                         </Link>
                       </div>
                     </div>
                   );
                 })}
 
-                {visibleTeams < filteredTeams.length && (
+                {filteredTeams.length > visibleTeams && (
                   <button
-                    className="pixel-btn"
+                    className="btn"
                     style={{ width: '100%', padding: '10px', fontSize: 12, marginTop: 4 }}
                     onClick={() => setVisibleTeams((v) => v + 5)}
                   >
-                    SHOW MORE MATCHES
+                    Show more
                   </button>
+                )}
+
+                {filteredTeams.length > 0 && filteredTeams.length <= visibleTeams && !matchLoading && (
+                  <button
+                    className="btn"
+                    style={{ width: '100%', padding: '10px', fontSize: 12, marginTop: 4 }}
+                    onClick={handleShowMore}
+                  >
+                    {matchLoading ? 'Loading...' : 'Load more matches'}
+                  </button>
+                )}
+
+                {isFallback && (
+                  <div style={{ fontFamily: 'var(--meta)', fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 8 }}>
+                    Showing keyword-based results (AI matching is warming up)
+                  </div>
                 )}
               </div>
             )}
 
             {hasMatched && activeTab === 'people' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {MOCK_PEOPLE.map((person) => (
-                  <div key={person.name} className="card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <span style={{ fontFamily: 'var(--body)', fontSize: 13, color: 'var(--text)' }}>{person.name}</span>
-                      <span style={{ fontFamily: 'var(--meta)', fontSize: 12, color: 'var(--muted)' }}>Looking for: {person.looking}</span>
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                      {person.skills.map((s) => (
-                        <span key={s} className="skill-tag">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: 32 }}>
+                <p style={{ fontFamily: 'var(--body)', fontSize: 14, color: 'var(--muted)', textAlign: 'center' }}>
+                  People matching coming soon. Use the Team map to find participants with similar backgrounds.
+                </p>
               </div>
             )}
           </div>

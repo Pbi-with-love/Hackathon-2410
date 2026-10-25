@@ -10,6 +10,7 @@ import profileRouter from "./routes/profile.js";
 import mapRouter from "./routes/map.js";
 import matchRouter from "./routes/matches.js";
 import suggestionsRouter from "./routes/matching.js";
+import aiMatchRouter from "./routes/aiMatch.js";
 
 const app = express();
 
@@ -33,6 +34,9 @@ app.use("/profile", profileRouter);
 app.use("/map", mapRouter);
 app.use("/match", matchRouter);
 app.use("/match", suggestionsRouter);
+
+// AI matching proxy → n8n
+app.use("/api/match", aiMatchRouter);
 
 // Health check
 app.get("/health", (_req, res) => {

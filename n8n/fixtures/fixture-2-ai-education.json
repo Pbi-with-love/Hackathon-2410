@@ -1,0 +1,8 @@
+{
+  "prompt": "I want to build an AI-powered education tool",
+  "profile": null,
+  "target": "teams",
+  "exclude_ids": [],
+  "feedback": { "weights": null, "declined": [] },
+  "limit": 5
+}

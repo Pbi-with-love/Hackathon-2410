@@ -1,0 +1,123 @@
+- generic [ref=f2e3]:
+  - navigation [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - link "0% CONET" [ref=f2e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f2e7]: 0%
+        - generic [ref=f2e8]: CONET
+      - link "Home" [ref=f2e9] [cursor=pointer]:
+        - /url: /
+      - link "Find my match" [ref=f2e10] [cursor=pointer]:
+        - /url: /match
+      - link "Team map" [ref=f2e11] [cursor=pointer]:
+        - /url: /map/teams
+      - link "Mentor map" [ref=f2e12] [cursor=pointer]:
+        - /url: /map/mentors
+      - link "My team" [ref=f2e13] [cursor=pointer]:
+        - /url: /team
+      - generic [ref=f2e14]:
+        - button "0 invitations" [ref=f2e15] [cursor=pointer]
+        - button "A Aleksi" [ref=f2e20] [cursor=pointer]:
+          - generic [ref=f2e21]: A
+          - generic [ref=f2e22]: Aleksi
+  - main [ref=f2e23]:
+    - generic [ref=f2e24]:
+      - generic [ref=f2e26]:
+        - button "> IMPORT CV / PROFILE" [ref=f2e27] [cursor=pointer]
+        - generic [ref=f2e28]: Upload a CV or paste a link
+      - generic [ref=f2e31]:
+        - generic [ref=f2e32]:
+          - generic [ref=f2e33]:
+            - generic [ref=f2e34]:
+              - generic [ref=f2e35]: AI MATCHMAKER
+              - generic [ref=f2e36]: Hi! Tell me your idea, the skills you bring, and the role you want to play.
+            - generic [ref=f2e56]:
+              - generic [ref=f2e57]: YOU
+              - generic [ref=f2e58]: I'm a frontend dev with Figma skills, interested in frontend
+            - generic [ref=f2e59]:
+              - generic [ref=f2e60]: AI MATCHMAKER
+              - generic [ref=f2e61]:
+                - text: "Here's what I picked up:"
+                - generic [ref=f2e62]:
+                  - generic [ref=f2e63]: "IDEA:"
+                  - generic [ref=f2e64]:
+                    - text: "SKILLS:"
+                    - generic [ref=f2e65]:
+                      - generic [ref=f2e66] [cursor=pointer]:
+                        - text: React
+                        - generic [ref=f2e67]: x
+                      - generic [ref=f2e68] [cursor=pointer]:
+                        - text: TypeScript
+                        - generic [ref=f2e69]: x
+                      - generic [ref=f2e70] [cursor=pointer]:
+                        - text: CSS
+                        - generic [ref=f2e71]: x
+                  - generic [ref=f2e72]:
+                    - text: "ROLE:"
+                    - generic [ref=f2e73] [cursor=pointer]:
+                      - text: frontend developer
+                      - generic [ref=f2e74]: x
+                  - generic [ref=f2e75]: "INTERESTS:"
+          - generic [ref=f2e41]:
+            - textbox "Tell me about yourself..." [ref=f2e42]
+            - button "SEND" [active] [ref=f2e43]
+        - generic [ref=f2e44]:
+          - generic [ref=f2e45]:
+            - generic [ref=f2e46]:
+              - button "TEAMS 4" [ref=f2e76] [cursor=pointer]
+              - button "PEOPLE" [ref=f2e48] [cursor=pointer]
+            - combobox [ref=f2e49] [cursor=pointer]:
+              - option "Best fit" [selected]
+              - option "Newest"
+              - option "Most members"
+          - generic [ref=f2e77]:
+            - generic [ref=f2e78]:
+              - generic [ref=f2e79]:
+                - generic [ref=f2e80]:
+                  - generic [ref=f2e81]: GreenGrid
+                  - generic [ref=f2e82]: Open challenge — 0/5 members
+                - generic [ref=f2e83]: 33%
+              - generic [ref=f2e84]:
+                - generic [ref=f2e85]: frontend developer
+                - generic [ref=f2e86]: backend developer
+                - generic [ref=f2e87]: product manager
+              - paragraph [ref=f2e88]: This team needs a frontend developer — that matches your skills
+              - generic [ref=f2e89]:
+                - button "Request to join" [ref=f2e90] [cursor=pointer]
+                - button "Skip" [ref=f2e91] [cursor=pointer]
+                - link "Show on map" [ref=f2e92] [cursor=pointer]:
+                  - /url: /map/teams
+            - generic [ref=f2e93]:
+              - generic [ref=f2e94]:
+                - generic [ref=f2e95]:
+                  - generic [ref=f2e96]: QuestCity
+                  - generic [ref=f2e97]: Open challenge — 0/5 members
+                - generic [ref=f2e98]: 33%
+              - generic [ref=f2e99]:
+                - generic [ref=f2e100]: mobile developer
+                - generic [ref=f2e101]: frontend developer
+                - generic [ref=f2e102]: ml engineer
+              - paragraph [ref=f2e103]: This team needs a frontend developer — that matches your skills
+              - generic [ref=f2e104]:
+                - button "Request to join" [ref=f2e105] [cursor=pointer]
+                - button "Skip" [ref=f2e106] [cursor=pointer]
+                - link "Show on map" [ref=f2e107] [cursor=pointer]:
+                  - /url: /map/teams
+            - generic [ref=f2e108]:
+              - generic [ref=f2e109]:
+                - generic [ref=f2e110]:
+                  - generic [ref=f2e111]: CarbonTrace
+                  - generic [ref=f2e112]: Open challenge — 0/5 members
+                - generic [ref=f2e113]: 33%
+              - generic [ref=f2e114]:
+                - generic [ref=f2e115]: backend developer
+                - generic [ref=f2e116]: frontend developer
+                - generic [ref=f2e117]: devops engineer
+              - paragraph [ref=f2e118]: This team needs a frontend developer — that matches your skills
+              - generic [ref=f2e119]:
+                - button "Request to join" [ref=f2e120] [cursor=pointer]
+                - button "Skip" [ref=f2e121] [cursor=pointer]
+                - link "Show on map" [ref=f2e122] [cursor=pointer]:
+                  - /url: /map/teams
+            - button "Show more" [ref=f2e123] [cursor=pointer]
+            - generic [ref=f2e124]: Showing keyword-based results (AI matching is warming up)

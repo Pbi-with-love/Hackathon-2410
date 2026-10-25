@@ -11,68 +11,68 @@
 INSERT INTO participants (id, name, email, password_hash, bio, skills, roles, interests, status, lat, lng) VALUES
 
 -- Sahkotalo (4)
-('a1000000-0000-0000-0000-000000000001', 'Aleksi Makinen',   'aleksi@example.com',   '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Frontend dev who loves React and clean UIs.',
+('a1000000-0000-0000-0000-000000000001', 'Aleksi Makinen',   'aleksi@example.com',   '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Frontend dev who loves React and clean UIs.',
   '["React","TypeScript","CSS"]', '{"frontend developer"}', '{"smart city","sustainability"}', 'looking', 61.49729, 23.75586),
 
-('a1000000-0000-0000-0000-000000000003', 'Mikael Korhonen',  'mikael@example.com',   '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Backend engineer with Node.js and Postgres expertise.',
+('a1000000-0000-0000-0000-000000000003', 'Mikael Korhonen',  'mikael@example.com',   '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Backend engineer with Node.js and Postgres expertise.',
   '["Node.js","PostgreSQL","Docker"]', '{"backend developer"}', '{"fintech","smart city"}', 'looking', 61.49712, 23.75646),
 
-('a1000000-0000-0000-0000-000000000011', 'Harri Lehtinen',   'harri@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Data scientist with expertise in time-series forecasting.',
+('a1000000-0000-0000-0000-000000000011', 'Harri Lehtinen',   'harri@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Data scientist with expertise in time-series forecasting.',
   '["Python","pandas","scikit-learn"]', '{"data scientist"}', '{"energy","transport"}', 'looking', 61.49694, 23.75586),
 
-('a1000000-0000-0000-0000-000000000017', 'Timo Hyvonen',     'timo@example.com',     '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'DevOps engineer who loves CI/CD and cloud cost optimisation.',
+('a1000000-0000-0000-0000-000000000017', 'Timo Hyvonen',     'timo@example.com',     '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'DevOps engineer who loves CI/CD and cloud cost optimisation.',
   '["Kubernetes","Terraform","AWS"]', '{"devops engineer"}', '{"smart city","transport"}', 'looking', 61.49722, 23.75641),
 
 -- Rakennustalo (4)
-('a1000000-0000-0000-0000-000000000005', 'Juhani Niemi',     'juhani@example.com',   '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'ML engineer specialising in NLP and recommendation systems.',
+('a1000000-0000-0000-0000-000000000005', 'Juhani Niemi',     'juhani@example.com',   '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'ML engineer specialising in NLP and recommendation systems.',
   '["Python","PyTorch","HuggingFace"]', '{"ml engineer"}', '{"health","education"}', 'looking', 61.49731, 23.75962),
 
-('a1000000-0000-0000-0000-000000000006', 'Laura Heikkinen',  'laura@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Computer vision researcher with PyTorch and OpenCV experience.',
+('a1000000-0000-0000-0000-000000000006', 'Laura Heikkinen',  'laura@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Computer vision researcher with PyTorch and OpenCV experience.',
   '["Python","OpenCV","TensorFlow"]', '{"ml engineer","data scientist"}', '{"sustainability","smart city"}', 'looking', 61.49755, 23.76009),
 
-('a1000000-0000-0000-0000-000000000015', 'Ville Turunen',    'ville@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Fullstack developer who enjoys building end-to-end features fast.',
+('a1000000-0000-0000-0000-000000000015', 'Ville Turunen',    'ville@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Fullstack developer who enjoys building end-to-end features fast.',
   '["React","Node.js","PostgreSQL"]', '{"fullstack developer"}', '{"fintech","smart city"}', 'looking', 61.49727, 23.75942),
 
-('a1000000-0000-0000-0000-000000000019', 'Oskari Leppanen',  'oskari@example.com',   '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Frontend dev passionate about data visualisation.',
+('a1000000-0000-0000-0000-000000000019', 'Oskari Leppanen',  'oskari@example.com',   '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Frontend dev passionate about data visualisation.',
   '["D3.js","React","WebGL"]', '{"frontend developer","data scientist"}', '{"energy","smart city"}', 'looking', 61.49734, 23.76021),
 
 -- Tietotalo (4)
-('a1000000-0000-0000-0000-000000000004', 'Sofia Leinonen',   'sofia@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Go and Rust backend developer interested in distributed systems.',
+('a1000000-0000-0000-0000-000000000004', 'Sofia Leinonen',   'sofia@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Go and Rust backend developer interested in distributed systems.',
   '["Go","Rust","Kubernetes"]', '{"backend developer"}', '{"sustainability","transport"}', 'looking', 61.49794, 23.75085),
 
-('a1000000-0000-0000-0000-000000000012', 'Miriam Ojala',     'miriam@example.com',   '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Data scientist focusing on geospatial analytics.',
+('a1000000-0000-0000-0000-000000000012', 'Miriam Ojala',     'miriam@example.com',   '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Data scientist focusing on geospatial analytics.',
   '["Python","GeoPandas","PostGIS"]', '{"data scientist","ml engineer"}', '{"smart city","sustainability"}', 'looking', 61.49784, 23.75095),
 
-('a1000000-0000-0000-0000-000000000016', 'Niina Hamalainen', 'niina@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Full-stack with a product mindset; previously co-founded a startup.',
+('a1000000-0000-0000-0000-000000000016', 'Niina Hamalainen', 'niina@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Full-stack with a product mindset; previously co-founded a startup.',
   '["Next.js","Prisma","tRPC"]', '{"fullstack developer","product manager"}', '{"education","health"}', 'looking', 61.49765, 23.75115),
 
-('a1000000-0000-0000-0000-000000000020', 'Paula Lindqvist',  'paula@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Backend + ML engineer bridging data pipelines and product features.',
+('a1000000-0000-0000-0000-000000000020', 'Paula Lindqvist',  'paula@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Backend + ML engineer bridging data pipelines and product features.',
   '["Python","FastAPI","Redis"]', '{"backend developer","ml engineer"}', '{"health","fintech"}', 'looking', 61.49784, 23.75080),
 
 -- Noodi (4)
-('a1000000-0000-0000-0000-000000000002', 'Emma Virtanen',    'emma@example.com',     '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'UI/UX focused frontend developer, Figma enthusiast.',
+('a1000000-0000-0000-0000-000000000002', 'Emma Virtanen',    'emma@example.com',     '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'UI/UX focused frontend developer, Figma enthusiast.',
   '["Vue","Figma","Tailwind"]', '{"frontend developer","ux designer"}', '{"health","education"}', 'looking', 61.49833, 23.75552),
 
-('a1000000-0000-0000-0000-000000000007', 'Tuomas Jarvinen',  'tuomas@example.com',   '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'UX designer with strong user research background.',
+('a1000000-0000-0000-0000-000000000007', 'Tuomas Jarvinen',  'tuomas@example.com',   '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'UX designer with strong user research background.',
   '["Figma","Prototyping","User Research"]', '{"ux designer"}', '{"health","social"}', 'looking', 61.49813, 23.75623),
 
-('a1000000-0000-0000-0000-000000000009', 'Pekka Rantanen',   'pekka@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'PM with 3 years of B2B SaaS experience.',
+('a1000000-0000-0000-0000-000000000009', 'Pekka Rantanen',   'pekka@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'PM with 3 years of B2B SaaS experience.',
   '["Roadmapping","Agile","Analytics"]', '{"product manager"}', '{"fintech","smart city"}', 'looking', 61.49825, 23.75596),
 
-('a1000000-0000-0000-0000-000000000014', 'Kaisa Mattila',    'kaisa@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'React Native developer with UX sensibility.',
+('a1000000-0000-0000-0000-000000000014', 'Kaisa Mattila',    'kaisa@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'React Native developer with UX sensibility.',
   '["React Native","TypeScript","Redux"]', '{"mobile developer","frontend developer"}', '{"gaming","social"}', 'looking', 61.49806, 23.75643),
 
 -- Konetalo (4)
-('a1000000-0000-0000-0000-000000000008', 'Anna Salonen',     'anna@example.com',     '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Product designer passionate about accessibility and inclusive design.',
+('a1000000-0000-0000-0000-000000000008', 'Anna Salonen',     'anna@example.com',     '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Product designer passionate about accessibility and inclusive design.',
   '["Figma","Design Systems","Accessibility"]', '{"ux designer","product manager"}', '{"education","social"}', 'looking', 61.49451, 23.75522),
 
-('a1000000-0000-0000-0000-000000000010', 'Sanna Koskinen',   'sanna@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Growth PM focused on consumer apps and sustainability.',
+('a1000000-0000-0000-0000-000000000010', 'Sanna Koskinen',   'sanna@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Growth PM focused on consumer apps and sustainability.',
   '["A/B Testing","SQL","OKRs"]', '{"product manager","data scientist"}', '{"sustainability","gaming"}', 'looking', 61.49432, 23.75522),
 
-('a1000000-0000-0000-0000-000000000013', 'Risto Makela',     'risto@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'iOS and Android developer with Flutter expertise.',
+('a1000000-0000-0000-0000-000000000013', 'Risto Makela',     'risto@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'iOS and Android developer with Flutter expertise.',
   '["Flutter","Dart","Swift"]', '{"mobile developer"}', '{"health","social"}', 'looking', 61.49423, 23.75480),
 
-('a1000000-0000-0000-0000-000000000018', 'Leena Aaltonen',   'leena@example.com',    '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2', 'Platform engineer with Helm, ArgoCD, and observability stacks.',
+('a1000000-0000-0000-0000-000000000018', 'Leena Aaltonen',   'leena@example.com',    '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq', 'Platform engineer with Helm, ArgoCD, and observability stacks.',
   '["Helm","ArgoCD","Prometheus"]', '{"devops engineer","backend developer"}', '{"sustainability","energy"}', 'looking', 61.49416, 23.75552)
 
 ON CONFLICT (email) DO NOTHING;
@@ -149,42 +149,42 @@ INSERT INTO mentors (id, name, email, password_hash, expertise, experience, stat
 
 ('c3000000-0000-0000-0000-000000000001',
  'Dr. Maria Svensson', 'maria.mentor@example.com',
- '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2',
+ '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq',
  '{"machine learning","computer vision","PyTorch"}',
  '10 years in ML research at Aalto University; shipped two production CV pipelines for industrial inspection.',
  'available', 61.49724, 23.75972),
 
 ('c3000000-0000-0000-0000-000000000002',
  'James O''Connor', 'james.mentor@example.com',
- '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2',
+ '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq',
  '{"web development","React","Node.js","TypeScript"}',
  'Staff engineer at a Series B fintech; built scalable Node.js microservices serving 1M+ users.',
  'available', 61.49694, 23.75589),
 
 ('c3000000-0000-0000-0000-000000000003',
  'Yuki Tanaka', 'yuki.mentor@example.com',
- '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2',
+ '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq',
  '{"mobile development","iOS","Android","Flutter"}',
  '8 years building mobile apps; 3 apps with 100k+ downloads on App Store and Google Play.',
  'available', 61.49829, 23.75584),
 
 ('c3000000-0000-0000-0000-000000000004',
  'Priya Nair', 'priya.mentor@example.com',
- '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2',
+ '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq',
  '{"data engineering","Apache Spark","Kafka","dbt"}',
  'Principal data engineer at a logistics unicorn; designed petabyte-scale event streaming pipelines.',
  'busy', 61.49437, 23.75532),
 
 ('c3000000-0000-0000-0000-000000000005',
  'Clara Fontaine', 'clara.mentor@example.com',
- '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2',
+ '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq',
  '{"UX research","design systems","Figma","accessibility"}',
  'Lead UX researcher at a healthtech startup; runs usability labs and ships design systems used by 40 engineers.',
  'available', 61.49771, 23.75095),
 
 ('c3000000-0000-0000-0000-000000000006',
  'Antti Valimaki', 'antti.mentor@example.com',
- '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LpMsAkgzCg2',
+ '$2b$10$n4JaYJmbavm.zggH7qemxu/3dL2DKEZpRqBNf6KYltVpJITeQYJMq',
  '{"cloud infrastructure","Kubernetes","Terraform","AWS","observability"}',
  'Senior SRE at a Nordic cloud consultancy; manages multi-cluster K8s environments and mentors DevOps teams.',
  'away', 61.49735, 23.76023)
@@ -196,13 +196,62 @@ ON CONFLICT (email) DO NOTHING;
 -- ============================================================
 
 INSERT INTO team_members (team_id, participant_id) VALUES
-('b2000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001'),
-('b2000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000006'),
-('b2000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000011'),
-('b2000000-0000-0000-0000-000000000004', 'a1000000-0000-0000-0000-000000000007'),
-('b2000000-0000-0000-0000-000000000005', 'a1000000-0000-0000-0000-000000000015'),
-('b2000000-0000-0000-0000-000000000006', 'a1000000-0000-0000-0000-000000000013'),
-('b2000000-0000-0000-0000-000000000007', 'a1000000-0000-0000-0000-000000000010'),
-('b2000000-0000-0000-0000-000000000008', 'a1000000-0000-0000-0000-000000000018'),
-('b2000000-0000-0000-0000-000000000008', 'a1000000-0000-0000-0000-000000000019')
+-- Captains (must be in team_members too)
+('b2000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000003'),  -- Mikael (SmartFlow captain)
+('b2000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000005'),  -- Juhani (MindBridge captain)
+('b2000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000004'),  -- Sofia (GreenGrid captain)
+('b2000000-0000-0000-0000-000000000004', 'a1000000-0000-0000-0000-000000000008'),  -- Anna (LearnLoop captain)
+('b2000000-0000-0000-0000-000000000005', 'a1000000-0000-0000-0000-000000000009'),  -- Pekka (PayLite captain)
+('b2000000-0000-0000-0000-000000000006', 'a1000000-0000-0000-0000-000000000014'),  -- Kaisa (QuestCity captain)
+('b2000000-0000-0000-0000-000000000007', 'a1000000-0000-0000-0000-000000000016'),  -- Niina (CareBridge captain)
+('b2000000-0000-0000-0000-000000000008', 'a1000000-0000-0000-0000-000000000011'),  -- Harri (CarbonTrace captain)
+-- Additional members
+('b2000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001'),  -- Aleksi in SmartFlow
+('b2000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000006'),  -- Laura in MindBridge
+('b2000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000011'),  -- Harri also in GreenGrid
+('b2000000-0000-0000-0000-000000000004', 'a1000000-0000-0000-0000-000000000007'),  -- Tuomas in LearnLoop
+('b2000000-0000-0000-0000-000000000005', 'a1000000-0000-0000-0000-000000000015'),  -- Ville in PayLite
+('b2000000-0000-0000-0000-000000000006', 'a1000000-0000-0000-0000-000000000013'),  -- Risto in QuestCity
+('b2000000-0000-0000-0000-000000000007', 'a1000000-0000-0000-0000-000000000010'),  -- Sanna in CareBridge
+('b2000000-0000-0000-0000-000000000008', 'a1000000-0000-0000-0000-000000000018'),  -- Leena in CarbonTrace
+('b2000000-0000-0000-0000-000000000008', 'a1000000-0000-0000-0000-000000000019')   -- Oskari in CarbonTrace
+ON CONFLICT DO NOTHING;
+
+-- ============================================================
+-- FIX PARTICIPANT STATUSES FOR TEAM MEMBERS
+-- ============================================================
+
+UPDATE participants SET status = 'in_team' WHERE id IN (
+  'a1000000-0000-0000-0000-000000000001',  -- Aleksi (SmartFlow member)
+  'a1000000-0000-0000-0000-000000000003',  -- Mikael (SmartFlow captain)
+  'a1000000-0000-0000-0000-000000000004',  -- Sofia (GreenGrid captain)
+  'a1000000-0000-0000-0000-000000000005',  -- Juhani (MindBridge captain)
+  'a1000000-0000-0000-0000-000000000006',  -- Laura (MindBridge member)
+  'a1000000-0000-0000-0000-000000000007',  -- Tuomas (LearnLoop member)
+  'a1000000-0000-0000-0000-000000000008',  -- Anna (LearnLoop captain)
+  'a1000000-0000-0000-0000-000000000009',  -- Pekka (PayLite captain)
+  'a1000000-0000-0000-0000-000000000010',  -- Sanna (CareBridge member)
+  'a1000000-0000-0000-0000-000000000011',  -- Harri (GreenGrid+CarbonTrace)
+  'a1000000-0000-0000-0000-000000000013',  -- Risto (QuestCity member)
+  'a1000000-0000-0000-0000-000000000014',  -- Kaisa (QuestCity captain)
+  'a1000000-0000-0000-0000-000000000015',  -- Ville (PayLite member)
+  'a1000000-0000-0000-0000-000000000016',  -- Niina (CareBridge captain)
+  'a1000000-0000-0000-0000-000000000018',  -- Leena (CarbonTrace member)
+  'a1000000-0000-0000-0000-000000000019'   -- Oskari (CarbonTrace member)
+);
+
+-- ============================================================
+-- DEMO MATCHES
+-- ============================================================
+
+-- Emma receives 2 team invitations
+INSERT INTO matches (participant_id, team_id, direction, state, score, reasons) VALUES
+('a1000000-0000-0000-0000-000000000002', 'b2000000-0000-0000-0000-000000000001', 'team_to_participant', 'invited', 85, '["Your UX and frontend skills fill SmartFlow''s biggest gap"]'),
+('a1000000-0000-0000-0000-000000000002', 'b2000000-0000-0000-0000-000000000004', 'team_to_participant', 'invited', 72, '["LearnLoop needs a designer who understands accessibility"]')
+ON CONFLICT DO NOTHING;
+
+-- SmartFlow captain (Mikael) receives 2 join requests
+INSERT INTO matches (participant_id, team_id, direction, state, score, reasons) VALUES
+('a1000000-0000-0000-0000-000000000007', 'b2000000-0000-0000-0000-000000000001', 'participant_to_team', 'requested', 78, '["Tuomas brings UX research skills your team is missing"]'),
+('a1000000-0000-0000-0000-000000000014', 'b2000000-0000-0000-0000-000000000001', 'participant_to_team', 'requested', 65, '["Kaisa fills the frontend developer gap with React Native"]')
 ON CONFLICT DO NOTHING;

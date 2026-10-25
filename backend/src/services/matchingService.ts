@@ -19,7 +19,7 @@ export interface ParticipantSuggestion {
 }
 
 export function rankTeamsForParticipant(
-  participant: { roles: string[]; skills: Array<{ name: string }> },
+  participant: { roles: string[]; skills: Array<string | { name: string }> },
   teams: Array<{
     id: string;
     name: string;
@@ -30,9 +30,13 @@ export function rankTeamsForParticipant(
     lng: number | null;
   }>
 ): TeamSuggestion[] {
+  const rawSkills = participant.skills as Array<string | { name: string }> | null;
+  const skillNames = (rawSkills || []).map((s) =>
+    (typeof s === 'string' ? s : s.name).toLowerCase()
+  );
   const participantTokens = new Set([
     ...participant.roles.map((r) => r.toLowerCase()),
-    ...participant.skills.map((s) => s.name.toLowerCase()),
+    ...skillNames,
   ]);
 
   const openTeams = teams.filter((t) => t.status === 'open');
@@ -94,9 +98,9 @@ export function rankParticipantsForTeam(
     .map((participant) => {
       if (team.needed_roles.length === 0) return null;
 
-      const rawSkills = participant.skills as Array<{ name: string; level?: number }> | null;
+      const rawSkills = participant.skills as Array<string | { name: string; level?: number }> | null;
       const skills: Array<{ name: string; level: number }> = Array.isArray(rawSkills)
-        ? rawSkills.map((s) => ({ name: s.name, level: s.level ?? 1 }))
+        ? rawSkills.map((s) => typeof s === 'string' ? { name: s, level: 1 } : { name: s.name, level: s.level ?? 1 })
         : [];
 
       const participantTokens = new Set([
