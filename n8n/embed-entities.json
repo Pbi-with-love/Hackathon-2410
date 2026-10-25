@@ -1,0 +1,136 @@
+{
+  "name": "0% CONET — Embed Entities",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/teams?embedding=is.null&select=id,name,challenge,project_idea,goals,needed_roles",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-teams",
+      "name": "Fetch teams missing embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 200],
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Supabase Service Key" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/participants?embedding=is.null&select=id,name,bio,skills,roles,interests",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-participants",
+      "name": "Fetch participants missing embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 400],
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Supabase Service Key" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/mentors?embedding=is.null&select=id,name,expertise,experience",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-mentors",
+      "name": "Fetch mentors missing embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [240, 600],
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Supabase Service Key" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build embed text for each entity\nconst teams = $('Fetch teams missing embeddings').first().json;\nconst participants = $('Fetch participants missing embeddings').first().json;\nconst mentors = $('Fetch mentors missing embeddings').first().json;\n\nconst toEmbed = (arr) => Array.isArray(arr) ? arr : [];\n\nconst items = [];\n\nfor (const t of toEmbed(teams)) {\n  const text = [t.name, t.challenge, t.project_idea, t.goals, ...(t.needed_roles || [])].filter(Boolean).join(' ');\n  items.push({ id: t.id, table: 'teams', text });\n}\n\nfor (const p of toEmbed(participants)) {\n  const skills = Array.isArray(p.skills) ? p.skills.map(s => typeof s === 'string' ? s : s.name).join(' ') : '';\n  const roles = Array.isArray(p.roles) ? p.roles.join(' ') : '';\n  const interests = Array.isArray(p.interests) ? p.interests.join(' ') : '';\n  const text = [p.name, p.bio, skills, roles, interests].filter(Boolean).join(' ');\n  items.push({ id: p.id, table: 'participants', text });\n}\n\nfor (const m of toEmbed(mentors)) {\n  const expertise = Array.isArray(m.expertise) ? m.expertise.join(' ') : '';\n  const text = [m.name, expertise, m.experience].filter(Boolean).join(' ');\n  items.push({ id: m.id, table: 'mentors', text });\n}\n\n// Chunk into batches of 50\nconst batches = [];\nfor (let i = 0; i < items.length; i += 50) {\n  batches.push(items.slice(i, i + 50));\n}\n\nreturn batches.map(batch => ({ json: { batch } }));"
+      },
+      "id": "build-texts",
+      "name": "Build embed text + batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": {{ JSON.stringify($json.batch.map(item => ({ model: 'models/gemini-embedding-001', content: { parts: [{ text: item.text }] } }))) }}\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "embed-batch",
+      "name": "Embed batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [780, 400],
+      "credentials": {
+        "httpQueryAuth": { "id": "", "name": "Gemini API Key" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Write embeddings back to Supabase\nconst batch = $('Build embed text + batch').first().json.batch;\nconst embeddings = $input.first().json.embeddings || [];\n\nconst results = { teams: 0, participants: 0, mentors: 0, errors: 0 };\nconst supabaseUrl = $env.SUPABASE_URL;\n\nfor (let i = 0; i < batch.length; i++) {\n  const item = batch[i];\n  const embedding = embeddings[i]?.values;\n  if (!embedding) { results.errors++; continue; }\n\n  try {\n    const res = await this.helpers.httpRequest({\n      method: 'PATCH',\n      url: `${supabaseUrl}/rest/v1/${item.table}?id=eq.${item.id}`,\n      headers: {\n        'Content-Type': 'application/json',\n        'Prefer': 'return=minimal',\n      },\n      body: JSON.stringify({ embedding: JSON.stringify(embedding) }),\n      returnFullResponse: false,\n    });\n    results[item.table]++;\n  } catch (e) {\n    results.errors++;\n  }\n}\n\nreturn [{ json: { summary: `Embedded: ${results.teams} teams, ${results.participants} participants, ${results.mentors} mentors. Errors: ${results.errors}` } }];"
+      },
+      "id": "write-embeddings",
+      "name": "Write embeddings to Supabase",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1040, 400]
+    },
+    {
+      "parameters": {
+        "content": "## Embed Entities\nFetch rows with null embeddings from teams, participants, mentors.\nBuild text, batch-embed via Gemini, PATCH back to Supabase.\nRun manually after seeding or on demand.",
+        "width": 500,
+        "height": 140
+      },
+      "id": "sticky-embed",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [0, 120]
+    }
+  ],
+  "connections": {
+    "Manual trigger": {
+      "main": [[
+        { "node": "Fetch teams missing embeddings", "type": "main", "index": 0 },
+        { "node": "Fetch participants missing embeddings", "type": "main", "index": 0 },
+        { "node": "Fetch mentors missing embeddings", "type": "main", "index": 0 }
+      ]]
+    },
+    "Fetch teams missing embeddings": { "main": [[{ "node": "Build embed text + batch", "type": "main", "index": 0 }]] },
+    "Fetch participants missing embeddings": { "main": [[{ "node": "Build embed text + batch", "type": "main", "index": 0 }]] },
+    "Fetch mentors missing embeddings": { "main": [[{ "node": "Build embed text + batch", "type": "main", "index": 0 }]] },
+    "Build embed text + batch": { "main": [[{ "node": "Embed batch", "type": "main", "index": 0 }]] },
+    "Embed batch": { "main": [[{ "node": "Write embeddings to Supabase", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0
+}

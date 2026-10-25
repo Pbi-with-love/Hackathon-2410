@@ -1,0 +1,50 @@
+- generic [ref=f6e3]:
+  - navigation [ref=f6e4]:
+    - generic [ref=f6e5]:
+      - link "0% CONET" [ref=f6e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f6e7]: 0%
+        - generic [ref=f6e8]: CONET
+      - link "Home" [ref=f6e9] [cursor=pointer]:
+        - /url: /
+      - link "Find my match" [ref=f6e10] [cursor=pointer]:
+        - /url: /match
+      - link "Team map" [ref=f6e11] [cursor=pointer]:
+        - /url: /map/teams
+      - link "Mentor map" [ref=f6e12] [cursor=pointer]:
+        - /url: /map/mentors
+      - link "My team" [ref=f6e13] [cursor=pointer]:
+        - /url: /team
+      - generic [ref=f6e14]:
+        - button "0 invitations" [ref=f6e15] [cursor=pointer]
+        - button "E Emma" [ref=f6e20] [cursor=pointer]:
+          - generic [ref=f6e21]: E
+          - generic [ref=f6e22]: Emma
+  - main [ref=f6e23]:
+    - generic [ref=f6e24]:
+      - generic [ref=f6e26]:
+        - button "> IMPORT CV / PROFILE" [ref=f6e27] [cursor=pointer]
+        - generic [ref=f6e28]: Upload a CV or paste a link
+      - generic [ref=f6e31]:
+        - generic [ref=f6e32]:
+          - generic [ref=f6e33]:
+            - generic [ref=f6e34]:
+              - generic [ref=f6e35]: AI MATCHMAKER
+              - generic [ref=f6e36]: Hi! Tell me your idea, the skills you bring, and the role you want to play.
+            - generic [ref=f6e37]:
+              - button "I'm a frontend dev looking for a sustainability project" [ref=f6e38]
+              - button "I want to build an AI-powered education tool" [ref=f6e39]
+              - button "I have experience in ML and want to join a health-tech team" [ref=f6e40]
+          - generic [ref=f6e41]:
+            - textbox "Tell me about yourself..." [ref=f6e42]
+            - button "SEND" [ref=f6e43]
+        - generic [ref=f6e44]:
+          - generic [ref=f6e45]:
+            - generic [ref=f6e46]:
+              - button "TEAMS" [ref=f6e47] [cursor=pointer]
+              - button "PEOPLE" [ref=f6e48] [cursor=pointer]
+            - combobox [ref=f6e49] [cursor=pointer]:
+              - option "Best fit" [selected]
+              - option "Newest"
+              - option "Most members"
+          - paragraph [ref=f6e55]: Tell the AI matchmaker about yourself to see ranked matches here.

@@ -90,6 +90,7 @@ interface CanvasMapProps {
   onMarkerClick?: (marker: MapMarker) => void;
   selectedId?: string | null;
   demoMode?: boolean;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
 function geoToMap(lat: number, lng: number): { x: number; y: number } {
@@ -107,7 +108,9 @@ function paletteForMarker(m: MapMarker, index: number): SpritePalette {
   return { C: cap, c: shade(cap, 0.72), H: "#3a2416", S: skin, E: "#15121a", T: shirt, P: pants, B: "#2a1b12" };
 }
 
-export default function CanvasMap({ markers, onMarkerClick, selectedId, demoMode }: CanvasMapProps) {
+const USER_CAP_COLOR = '#00e5ff';
+
+export default function CanvasMap({ markers, onMarkerClick, selectedId, demoMode, userLocation }: CanvasMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef({ s: 0, x: 0, y: 0 });
@@ -289,7 +292,48 @@ export default function CanvasMap({ markers, onMarkerClick, selectedId, demoMode
       ctx.fillStyle = '#f3e6c8';
       ctx.fillText(txt, L.x, y0 + 8);
     }
-  }, [markers, selectedId]);
+
+    // "You" marker — drawn last so it's always on top
+    if (userLocation) {
+      const up = geoToMap(userLocation.lat, userLocation.lng);
+      const [ux, uy] = S(up.x, up.y);
+      if (ux > -30 && uy > -50 && ux < w + 30 && uy < h + 30) {
+        const uox = Math.round(ux - SW * px / 2);
+        const uoy = Math.round(uy - SH * px);
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillRect(uox, Math.round(uy) - px / 2, SW * px, px);
+        // Sprite with unique cyan cap
+        const userPal: SpritePalette = {
+          C: USER_CAP_COLOR, c: shade(USER_CAP_COLOR, 0.72),
+          H: "#3a2416", S: "#f6d2b4", E: "#15121a",
+          T: "#ececec", P: "#2b4c8c", B: "#2a1b12",
+        };
+        drawSprite(ctx, uox, uoy, px, userPal);
+        // "You" label — always visible
+        ctx.font = "8px 'Pixelify Sans', monospace";
+        const youTxt = "You";
+        const ytw = ctx.measureText(youTxt).width + 10;
+        const bounce = (Math.floor(t / 400) % 2) * 2;
+        const yay = uoy - 8 - bounce;
+        // Bouncing indicator
+        ctx.fillStyle = USER_CAP_COLOR;
+        ctx.fillRect(Math.round(ux) - 4, yay, 8, 2);
+        ctx.fillRect(Math.round(ux) - 2, yay + 2, 4, 2);
+        // Tag box
+        const yx0 = Math.round(ux - ytw / 2), yy0 = yay - 18;
+        ctx.fillStyle = MAP_COLORS.shadow;
+        ctx.fillRect(yx0 + 2, yy0 + 2, ytw, 15);
+        ctx.fillStyle = '#1c1814';
+        ctx.fillRect(yx0, yy0, ytw, 15);
+        ctx.strokeStyle = USER_CAP_COLOR;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(yx0 + 1, yy0 + 1, ytw - 2, 13);
+        ctx.fillStyle = USER_CAP_COLOR;
+        ctx.fillText(youTxt, ux, yy0 + 8);
+      }
+    }
+  }, [markers, selectedId, userLocation]);
 
   // Resize handler
   useEffect(() => {
@@ -427,12 +471,19 @@ export default function CanvasMap({ markers, onMarkerClick, selectedId, demoMode
   const recenter = useCallback(() => {
     const { w, h } = sizeRef.current;
     const v = viewRef.current;
-    v.s = Math.min(w / MW, h / MH) * 1.2;
-    v.x = w / 2 - (MW / 2) * v.s;
-    v.y = h / 2 - (MH / 2) * v.s;
+    if (userLocation) {
+      const mp = geoToMap(userLocation.lat, userLocation.lng);
+      v.s = Math.max(v.s, 2.0);
+      v.x = w / 2 - mp.x * v.s;
+      v.y = h / 2 - mp.y * v.s;
+    } else {
+      v.s = Math.min(w / MW, h / MH) * 1.2;
+      v.x = w / 2 - (MW / 2) * v.s;
+      v.y = h / 2 - (MH / 2) * v.s;
+    }
     clampView();
     forceRender(n => n + 1);
-  }, [clampView]);
+  }, [clampView, userLocation]);
 
   return (
     <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#161210' }}>

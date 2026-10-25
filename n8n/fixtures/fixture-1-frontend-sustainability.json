@@ -1,0 +1,8 @@
+{
+  "prompt": "I'm a frontend dev looking for a sustainability project",
+  "profile": null,
+  "target": "teams",
+  "exclude_ids": [],
+  "feedback": { "weights": null, "declined": [] },
+  "limit": 5
+}

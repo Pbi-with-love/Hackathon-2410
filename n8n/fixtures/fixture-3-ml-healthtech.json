@@ -1,0 +1,8 @@
+{
+  "prompt": "I have experience in ML and want to join a health-tech team",
+  "profile": null,
+  "target": "teams",
+  "exclude_ids": [],
+  "feedback": { "weights": null, "declined": [] },
+  "limit": 5
+}

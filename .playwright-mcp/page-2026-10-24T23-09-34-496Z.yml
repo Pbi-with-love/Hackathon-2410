@@ -1,0 +1,37 @@
+- generic [ref=f5e3]:
+  - navigation [ref=f5e4]:
+    - generic [ref=f5e5]:
+      - link "0% CONET" [ref=f5e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f5e7]: 0%
+        - generic [ref=f5e8]: CONET
+      - link "Home" [ref=f5e9] [cursor=pointer]:
+        - /url: /
+      - link "Find my match" [ref=f5e10] [cursor=pointer]:
+        - /url: /match
+      - link "Team map" [ref=f5e11] [cursor=pointer]:
+        - /url: /map/teams
+      - link "Mentor map" [ref=f5e12] [cursor=pointer]:
+        - /url: /map/mentors
+      - generic [ref=f5e13]:
+        - button "0 invitations" [ref=f5e14] [cursor=pointer]
+        - button "D Debug" [ref=f5e19] [cursor=pointer]:
+          - generic [ref=f5e20]: D
+          - generic [ref=f5e21]: Debug
+  - generic [ref=f5e23]:
+    - generic [ref=f5e24]:
+      - textbox "Search teams or skills" [ref=f5e25]:
+        - /placeholder: Search team / skill...
+      - combobox "Filter by missing role" [ref=f5e26] [cursor=pointer]:
+        - option "Missing role" [selected]
+      - combobox "Filter by challenge" [ref=f5e27] [cursor=pointer]:
+        - option "Challenge" [selected]
+      - generic [ref=f5e28]: Team leads 0
+    - generic [ref=f5e31]:
+      - generic [ref=f5e32]:
+        - generic [ref=f5e33]: 0 teams recruiting
+        - generic [ref=f5e34]: No teams match filters
+      - generic [ref=f5e39]:
+        - button "Zoom in" [ref=f5e40] [cursor=pointer]: +
+        - button "Zoom out" [ref=f5e41] [cursor=pointer]: −
+        - button "Center" [ref=f5e42] [cursor=pointer]: ME

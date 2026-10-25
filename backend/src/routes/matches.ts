@@ -6,11 +6,11 @@ import { requireAuth } from '../middleware/auth.js';
 const matchRouter = Router();
 
 const InviteBodySchema = z.object({
-  participantId: z.string().uuid(),
+  participantId: z.string().min(1),
 });
 
 const RequestBodySchema = z.object({
-  teamId: z.string().uuid(),
+  teamId: z.string().min(1),
 });
 
 const RespondBodySchema = z.object({
@@ -189,6 +189,18 @@ matchRouter.post('/:id/respond', requireAuth, async (req: Request, res: Response
        ON CONFLICT DO NOTHING`,
       [match.team_id, match.participant_id]
     );
+
+    // Auto-close if full
+    const countResult = await client.query(
+      'SELECT COUNT(*) as cnt FROM team_members WHERE team_id = $1',
+      [match.team_id]
+    );
+    if (parseInt(countResult.rows[0].cnt as string) >= 5) {
+      await client.query(
+        "UPDATE teams SET status = 'closed' WHERE id = $1",
+        [match.team_id]
+      );
+    }
 
     // Expire all other open matches for this participant
     await client.query(

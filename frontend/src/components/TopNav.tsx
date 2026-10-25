@@ -28,6 +28,7 @@ export default function TopNav({ notificationCount = 0 }: TopNavProps) {
     { to: '/match', label: 'Find my match' },
     { to: '/map/teams', label: 'Team map' },
     { to: '/map/mentors', label: 'Mentor map' },
+    { to: '/team', label: 'My team', badge: notificationCount },
   ];
 
   const isActive = (to: string) => {
@@ -91,7 +92,7 @@ export default function TopNav({ notificationCount = 0 }: TopNavProps) {
       </Link>
 
       {/* Nav links — 14px, sentence case, active = text color change */}
-      {navLinks.map(({ to, label }) => {
+      {navLinks.map(({ to, label, badge }) => {
         const active = isActive(to);
         return (
           <Link
@@ -107,6 +108,7 @@ export default function TopNav({ notificationCount = 0 }: TopNavProps) {
               borderRadius: 0,
               background: active ? 'var(--raised)' : 'transparent',
               transition: 'color 0.15s, background 0.15s',
+              position: 'relative',
             }}
             onMouseEnter={(e) => {
               if (!active) {
@@ -122,6 +124,28 @@ export default function TopNav({ notificationCount = 0 }: TopNavProps) {
             }}
           >
             {label}
+            {badge != null && badge > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  background: 'var(--negative)',
+                  color: '#fff',
+                  fontSize: 9,
+                  fontWeight: 600,
+                  width: 16,
+                  height: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  transform: 'translate(50%, -40%)',
+                }}
+              >
+                {badge > 9 ? '9+' : badge}
+              </span>
+            )}
           </Link>
         );
       })}

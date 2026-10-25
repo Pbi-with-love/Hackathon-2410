@@ -1,0 +1,17 @@
+[     103ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:15802
+[    6840ms] TypeError: Cannot read properties of undefined (reading 'name')
+    at TeamMatchingMapPage (http://localhost:5175/src/pages/TeamMatchingMapPage.tsx?t=1792883209360:900:41)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:14140:12)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:4398:19)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:5773:16)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:6389:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:942:66)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:9146:92)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:9042:37)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:9026:6)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=0e2c9a7c:8713:27)
+[    6839ms] [WARNING] %s
+
+%s
+ An error occurred in the <TeamMatchingMapPage> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/@vite/client:367

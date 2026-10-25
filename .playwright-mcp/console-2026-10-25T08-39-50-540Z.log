@@ -1,0 +1,3 @@
+[     131ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:15802
+[    4031ms] [ERROR] CoreLocationProvider: CoreLocation framework reported a kCLErrorLocationUnknown failure. @ http://localhost:5173/map/teams:0
+[   98255ms] [ERROR] CoreLocationProvider: CoreLocation framework reported a kCLErrorLocationUnknown failure. @ http://localhost:5173/map/teams:0

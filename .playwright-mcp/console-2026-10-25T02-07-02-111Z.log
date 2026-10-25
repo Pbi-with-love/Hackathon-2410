@@ -1,0 +1,18 @@
+[     180ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:15802
+[   22848ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:8080/api/match:0
+[  106144ms] Error: useAuth must be used within AuthProvider
+    at useAuth (http://localhost:5173/src/contexts/AuthContext.tsx:139:18)
+    at PrivateRoute (http://localhost:5173/src/App.tsx:20:30)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:14140:12)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:4398:19)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:5773:16)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:6389:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:942:66)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:9146:92)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:9042:37)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:9026:6)
+[  106135ms] [WARNING] %s
+
+%s
+ An error occurred in the <PrivateRoute> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=fe4a6a57:5448

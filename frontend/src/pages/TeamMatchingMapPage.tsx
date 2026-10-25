@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { apiFetch } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import CanvasMap, { type MapMarker } from '../components/CanvasMap';
@@ -78,6 +79,7 @@ function collectAllChallenges(teams: TeamMarker[]): string[] {
 
 export default function TeamMatchingMapPage() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   /* Map data */
   const [mapData, setMapData] = useState<MapData>({ teams: [], participants: [] });
@@ -90,11 +92,40 @@ export default function TeamMatchingMapPage() {
 
   /* Selection */
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<'team' | 'participant'>('team');
   const [teamDetail, setTeamDetail] = useState<TeamDetail | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinResult, setJoinResult] = useState<string | null>(null);
+
+  /* User geolocation — real-time tracking with profile fallback */
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => { /* geolocation failed — fallback handled below */ },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  /* Fallback: fetch user's saved profile location when live geolocation is unavailable */
+  useEffect(() => {
+    if (userLocation) return;
+    if (!user) return;
+    apiFetch(`/participants/${user.id}`)
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = (await res.json()) as { participant: { lat: string | null; lng: string | null } };
+        const lat = data.participant.lat ? parseFloat(data.participant.lat) : null;
+        const lng = data.participant.lng ? parseFloat(data.participant.lng) : null;
+        if (lat && lng) setUserLocation({ lat, lng });
+      })
+      .catch(() => { /* no fallback available */ });
+  }, [userLocation, user]);
 
   /* Fetch map data */
   useEffect(() => {
@@ -144,11 +175,16 @@ export default function TeamMatchingMapPage() {
     return list;
   }, [mapData.teams, search, roleFilter, challengeFilter]);
 
-  /* Map markers — team leads only */
+  /* Is current user a team captain? */
+  const isCaptain = useMemo(
+    () => user ? mapData.teams.some((t) => t.captain.id === user.id) : false,
+    [mapData.teams, user],
+  );
+
+  /* Map markers — team leads + looking participants */
   const markers: MapMarker[] = useMemo(
-    () =>
-      /* TODO: sprites currently land on seed lat/lng — see seed/zone-anchor fix */
-      filteredTeams.map((t) => ({
+    () => [
+      ...filteredTeams.map((t) => ({
         id: t.id,
         name: t.name,
         lat: t.lat,
@@ -156,7 +192,18 @@ export default function TeamMatchingMapPage() {
         role: t.needed_roles[0],
         type: 'team' as const,
       })),
-    [filteredTeams],
+      ...mapData.participants
+        .filter((p) => !(userLocation && user && p.id === user.id))
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          lat: p.lat,
+          lng: p.lng,
+          role: p.roles[0],
+          type: 'participant' as const,
+        })),
+    ],
+    [filteredTeams, mapData.participants, userLocation, user],
   );
 
   /* Select a team */
@@ -177,11 +224,36 @@ export default function TeamMatchingMapPage() {
       Promise.all([
         apiFetch(`/teams/${id}`).then(async (res) => {
           if (!res.ok) return null;
-          return res.json() as Promise<TeamDetail>;
+          const data = (await res.json()) as {
+            team: {
+              id: string;
+              name: string;
+              captain_id: string;
+              captain_name: string;
+              captain_email: string;
+              project_idea: string | null;
+              needed_roles: string[];
+              challenge?: string;
+              goals?: string;
+              status: string;
+            };
+          };
+          const t = data.team;
+          if (!t) return null;
+          return {
+            id: t.id,
+            name: t.name,
+            project_idea: t.project_idea,
+            needed_roles: t.needed_roles ?? [],
+            challenge: t.challenge,
+            goals: t.goals,
+            captain: { id: t.captain_id, name: t.captain_name, email: t.captain_email },
+          } satisfies TeamDetail;
         }),
         apiFetch(`/teams/${id}/members`).then(async (res) => {
           if (!res.ok) return [];
-          return res.json() as Promise<TeamMember[]>;
+          const data = (await res.json()) as { members: TeamMember[] };
+          return data.members ?? [];
         }),
       ])
         .then(([detail, members]) => {
@@ -210,10 +282,36 @@ export default function TeamMatchingMapPage() {
     [mapData.teams],
   );
 
-  /* Marker click on canvas */
+  /* Auto-select team from URL ?select=<teamId> */
+  useEffect(() => {
+    const selectId = searchParams.get('select');
+    if (selectId && mapData.teams.length > 0) {
+      const team = mapData.teams.find(t => t.id === selectId);
+      if (team) {
+        selectTeam(selectId);
+      }
+    }
+  }, [mapData.teams, searchParams, selectTeam]);
+
+  /* Marker click on canvas — handle both teams and participants */
   const handleMarkerClick = useCallback(
     (marker: MapMarker) => {
-      selectTeam(marker.id === selectedId ? null : marker.id);
+      if (marker.id === selectedId) {
+        setSelectedId(null);
+        setSelectedType('team');
+        setTeamDetail(null);
+        setTeamMembers([]);
+        return;
+      }
+      if (marker.type === 'participant') {
+        setSelectedId(marker.id);
+        setSelectedType('participant');
+        setTeamDetail(null);
+        setTeamMembers([]);
+      } else {
+        setSelectedType('team');
+        selectTeam(marker.id);
+      }
     },
     [selectTeam, selectedId],
   );
@@ -221,12 +319,19 @@ export default function TeamMatchingMapPage() {
   /* List item click */
   const handleListClick = useCallback(
     (id: string) => {
-      selectTeam(id === selectedId ? null : id);
+      if (id === selectedId) {
+        setSelectedId(null);
+        setTeamDetail(null);
+        setTeamMembers([]);
+      } else {
+        setSelectedType('team');
+        selectTeam(id);
+      }
     },
     [selectTeam, selectedId],
   );
 
-  /* Request to join */
+  /* Request to join (participant → team) */
   const handleJoinRequest = useCallback(async () => {
     if (!selectedId || !user) return;
     setJoinLoading(true);
@@ -248,9 +353,32 @@ export default function TeamMatchingMapPage() {
     }
   }, [selectedId, user]);
 
+  /* Invite participant (captain → participant) */
+  const handleInvite = useCallback(async () => {
+    if (!selectedId || !user) return;
+    setJoinLoading(true);
+    setJoinResult(null);
+    try {
+      const res = await apiFetch('/match/invite', {
+        method: 'POST',
+        body: JSON.stringify({ participantId: selectedId }),
+      });
+      if (!res.ok) {
+        const b = (await res.json()) as { error: string };
+        throw new Error(b.error);
+      }
+      setJoinResult('Invitation sent');
+    } catch (err: unknown) {
+      setJoinResult(err instanceof Error ? err.message : 'Invite failed');
+    } finally {
+      setJoinLoading(false);
+    }
+  }, [selectedId, user]);
+
   /* Close drawer */
   const closeDrawer = useCallback(() => {
     setSelectedId(null);
+    setSelectedType('team');
     setTeamDetail(null);
     setTeamMembers([]);
     setJoinResult(null);
@@ -478,7 +606,8 @@ export default function TeamMatchingMapPage() {
                     textAlign: 'left',
                     padding: '12px 16px',
                     background: isActive ? 'var(--raised)' : 'transparent',
-                    border: 'none',
+                    borderTop: 0,
+                    borderRight: 0,
                     borderBottom: '1px solid var(--border)',
                     borderLeft: isActive
                       ? '3px solid var(--accent)'
@@ -602,6 +731,7 @@ export default function TeamMatchingMapPage() {
             markers={markers}
             onMarkerClick={handleMarkerClick}
             selectedId={selectedId}
+            userLocation={userLocation}
           />
         </div>
 
@@ -983,6 +1113,103 @@ export default function TeamMatchingMapPage() {
                   </div>
                 </>
               )}
+
+              {/* Participant detail view — shown when a participant sprite is clicked */}
+              {selectedType === 'participant' && selectedId && (() => {
+                const p = mapData.participants.find((pp) => pp.id === selectedId);
+                if (!p) return null;
+                return (
+                  <>
+                    <h2
+                      style={{
+                        fontFamily: 'var(--body)',
+                        fontSize: 16,
+                        fontWeight: 500,
+                        color: 'var(--text)',
+                        margin: '0 0 10px',
+                      }}
+                    >
+                      {p.name}
+                    </h2>
+
+                    {p.roles.length > 0 && (
+                      <div style={{ marginBottom: 12 }}>
+                        <div className="meta-label" style={{ marginBottom: 6 }}>ROLES</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                          {p.roles.map((r) => (
+                            <span key={r} className="skill-tag">{r}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {p.skills.length > 0 && (
+                      <div style={{ marginBottom: 12 }}>
+                        <div className="meta-label" style={{ marginBottom: 6 }}>SKILLS</div>
+                        <div
+                          style={{
+                            fontFamily: 'var(--body)',
+                            fontSize: 13,
+                            color: 'var(--muted)',
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {p.skills.join(', ')}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Invite button — only for captains */}
+                    {isCaptain && user && (
+                      <div style={{ marginTop: 12 }}>
+                        <button
+                          className="btn primary"
+                          disabled={joinLoading}
+                          onClick={handleInvite}
+                          style={{
+                            width: '100%',
+                            padding: '10px 0',
+                            fontSize: 13,
+                            opacity: joinLoading ? 0.6 : 1,
+                            cursor: joinLoading ? 'wait' : 'pointer',
+                          }}
+                        >
+                          {joinLoading ? 'Sending...' : 'Invite to my team'}
+                        </button>
+
+                        {joinResult && (
+                          <div
+                            style={{
+                              fontFamily: 'var(--body)',
+                              fontSize: 12,
+                              color: joinResult.includes('sent') ? '#22c55e' : '#f87171',
+                              textAlign: 'center',
+                              marginTop: 8,
+                            }}
+                          >
+                            {joinResult}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* For non-captains, show a note */}
+                    {!isCaptain && (
+                      <div
+                        style={{
+                          fontFamily: 'var(--body)',
+                          fontSize: 12,
+                          color: 'var(--muted)',
+                          marginTop: 12,
+                          fontStyle: 'italic',
+                        }}
+                      >
+                        Create a team to invite this participant.
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}

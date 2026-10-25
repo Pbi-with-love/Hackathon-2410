@@ -1,0 +1,270 @@
+{
+  "name": "0% CONET — Match Teams",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "match-teams",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-match",
+      "name": "Webhook: match-teams",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "match-teams"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate input and set defaults\nconst body = $input.first().json.body || $input.first().json;\n\nconst prompt = (body.prompt || '').trim();\nconst profile = body.profile || null;\nconst target = body.target || 'teams';\nconst excludeIds = body.exclude_ids || [];\nconst limit = Math.min(Math.max(body.limit || 5, 1), 20);\nconst feedback = body.feedback || {};\nconst weights = feedback.weights || { interest: 0.35, role: 0.35, avail: 0.30 };\nconst declined = feedback.declined || [];\n\nif (!prompt && !profile) {\n  throw new Error('Either prompt or profile is required');\n}\nif (prompt.length > 1000) {\n  throw new Error('Prompt too long (max 1000 chars)');\n}\n\nreturn [{ json: { prompt, profile, target, excludeIds, limit, weights, declined } }];"
+      },
+      "id": "validate",
+      "name": "Validate input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "has-profile",
+              "leftValue": "={{ $json.profile }}",
+              "rightValue": "",
+              "operator": { "type": "object", "operation": "exists" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-profile",
+      "name": "Has profile?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Extract a hackathon participant profile from this text:\\n\\n{{ $json.prompt }}\\n\\nReturn ONLY valid JSON matching this schema, no prose, no code fences:\\n{ \\\"idea\\\": string|null, \\\"interests\\\": string[], \\\"skills\\\": string[], \\\"roles\\\": string[] (first = primary), \\\"availability\\\": string|null, \\\"synonyms\\\": string[] (3-6 related search terms) }\\n\\nNormalise roles to: frontend developer, backend developer, fullstack developer, mobile developer, ml engineer, data scientist, ux designer, ui designer, product manager, marketing, media, business, hardware, devops engineer.\\nUse only information in the text. If a field has no data, use null or empty array.\"\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.1,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "llm-extract",
+      "name": "LLM: extract profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 400],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpQueryAuth": { "id": "", "name": "Gemini API Key" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse and repair the LLM extraction output\nconst input = $input.first().json;\nlet profile;\n\ntry {\n  // Gemini returns { candidates: [{ content: { parts: [{ text }] } }] }\n  let text = '';\n  if (input.candidates && input.candidates[0]) {\n    text = input.candidates[0].content.parts[0].text;\n  } else if (input.error) {\n    throw new Error('LLM error: ' + JSON.stringify(input.error));\n  } else {\n    text = JSON.stringify(input);\n  }\n\n  // Strip code fences if present\n  text = text.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  profile = JSON.parse(text);\n} catch (e) {\n  // Fallback: simple keyword extraction from the original prompt\n  const prompt = $('Validate input').first().json.prompt || '';\n  const words = prompt.toLowerCase().split(/[\\s,;.]+/).filter(w => w.length > 2);\n  const roleList = ['frontend developer','backend developer','fullstack developer','mobile developer','ml engineer','data scientist','ux designer','ui designer','product manager','marketing','media','business','hardware','devops engineer'];\n  const foundRoles = roleList.filter(r => words.some(w => r.includes(w)));\n  profile = {\n    idea: null,\n    interests: words.slice(0, 5),\n    skills: words.filter(w => !['want','build','have','good','would','like','play','role'].includes(w)).slice(0, 5),\n    roles: foundRoles.length > 0 ? foundRoles : ['fullstack developer'],\n    availability: null,\n    synonyms: words.slice(0, 4)\n  };\n}\n\n// Normalise\nconst ROLES = ['frontend developer','backend developer','fullstack developer','mobile developer','ml engineer','data scientist','ux designer','ui designer','product manager','marketing','media','business','hardware','devops engineer'];\nif (profile.roles) {\n  profile.roles = profile.roles.map(r => {\n    const low = r.toLowerCase().trim();\n    return ROLES.find(cr => cr === low) || low;\n  });\n}\nif (profile.skills) profile.skills = profile.skills.map(s => s.toLowerCase().trim());\nif (profile.interests) profile.interests = profile.interests.map(i => i.toLowerCase().trim());\nif (!profile.synonyms) profile.synonyms = [];\n\nreturn [{ json: { profile, prompt: $('Validate input').first().json.prompt } }];"
+      },
+      "id": "parse-profile",
+      "name": "Parse & repair profile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the query text and embedding text from the profile\nconst data = $input.first().json;\nconst profile = data.profile;\n\nconst parts = [\n  profile.idea || '',\n  ...(profile.interests || []),\n  ...(profile.synonyms || []),\n  ...(profile.skills || []),\n  ...(profile.roles || [])\n].filter(Boolean);\n\nconst queryText = parts.join(' ');\nconst embedText = [profile.idea || '', ...(profile.interests || []), ...(profile.roles || [])].filter(Boolean).join(' ');\n\nreturn [{ json: { ...data, queryText, embedText } }];"
+      },
+      "id": "build-query",
+      "name": "Build query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [{ \"text\": \"{{ $json.embedText }}\" }]\n  }\n}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "embed-query",
+      "name": "Embed query",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, 300],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpQueryAuth": { "id": "", "name": "Gemini API Key" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/hybrid_search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"q\": \"{{ $('Build query').first().json.queryText }}\",\n  \"q_emb\": {{ JSON.stringify($json.embedding?.values || []) }},\n  \"k\": 20,\n  \"min_overlap\": 0.5,\n  \"exclude\": {{ JSON.stringify($('Validate input').first().json.excludeIds) }},\n  \"search_target\": \"{{ $('Validate input').first().json.target }}\"\n}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "supabase-search",
+      "name": "Supabase: hybrid_search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, 300],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Supabase Service Key" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Re-rank and diversify candidates\n// Source of truth: n8n/src/rerank.js\n\nconst DEFAULT_WEIGHTS = { interest: 0.35, role: 0.35, avail: 0.30 };\n\nconst ADJACENCY = {\n  'fullstack developer': { 'frontend developer': 0.6, 'backend developer': 0.6 },\n  'ml engineer': { 'data scientist': 0.6 },\n  'data scientist': { 'ml engineer': 0.6 },\n  'ux designer': { 'ui designer': 0.8 },\n  'ui designer': { 'ux designer': 0.8 },\n  'product manager': { 'business': 0.6 },\n  'business': { 'product manager': 0.6 },\n  'marketing': { 'media': 0.6 },\n  'media': { 'marketing': 0.6 },\n};\n\nfunction normaliseWeights(w) {\n  const sum = Object.values(w).reduce((a, b) => a + b, 0);\n  if (sum === 0) return { ...DEFAULT_WEIGHTS };\n  const out = {};\n  for (const k of Object.keys(w)) out[k] = w[k] / sum;\n  return out;\n}\n\nfunction roleFit(userRoles, neededRoles) {\n  if (!neededRoles || neededRoles.length === 0) return { score: 0, matched: null };\n  const needed = new Set(neededRoles.map(r => r.toLowerCase()));\n  const primary = (userRoles[0] || '').toLowerCase();\n  if (needed.has(primary)) return { score: 1.0, matched: primary };\n  const adj = ADJACENCY[primary] || {};\n  for (const [adjRole, strength] of Object.entries(adj)) {\n    if (needed.has(adjRole)) return { score: strength, matched: adjRole };\n  }\n  for (let i = 1; i < userRoles.length; i++) {\n    const role = userRoles[i].toLowerCase();\n    if (needed.has(role)) return { score: 0.8, matched: role };\n    const adjSec = ADJACENCY[role] || {};\n    for (const [adjRole, strength] of Object.entries(adjSec)) {\n      if (needed.has(adjRole)) return { score: strength * 0.8, matched: adjRole };\n    }\n  }\n  return { score: 0, matched: null };\n}\n\nfunction dupPenalty(userRoles, memberRoles) {\n  if (!memberRoles || memberRoles.length === 0) return 0;\n  const memberSet = new Set(memberRoles.map(r => r.toLowerCase()));\n  let overlapping = 0;\n  for (const r of userRoles) { if (memberSet.has(r.toLowerCase())) overlapping++; }\n  return Math.min(0.3, 0.15 * overlapping);\n}\n\nfunction clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }\n\n// Main\nconst inputData = $('Validate input').first().json;\nconst profile = $('Build query').first().json.profile || $('Build query').first().json.profile;\nconst candidates = Array.isArray($input.first().json) ? $input.first().json : ($input.first().json.body || []);\nconst weights = normaliseWeights(inputData.weights || DEFAULT_WEIGHTS);\nconst excludeSet = new Set(inputData.excludeIds || []);\nconst limit = inputData.limit || 5;\nconst userRoles = (profile.roles || []).map(r => r.toLowerCase());\n\nlet filtered = candidates.filter(c => !excludeSet.has(c.id));\n\nconst scored = filtered.map(c => {\n  const interest = clamp(c.rrf || 0, 0, 1);\n  const rf = roleFit(userRoles, c.needed_roles);\n  const rawAvail = c.overlap != null ? c.overlap : 1.0;\n  const avail = clamp((rawAvail - 0.5) / 0.5, 0, 1);\n  const penalty = dupPenalty(userRoles, c.member_roles);\n  const raw = weights.interest * interest + weights.role * rf.score + weights.avail * avail - penalty;\n  const score = clamp(raw, 0, 1);\n  return {\n    id: c.id, name: c.name, challenge: c.challenge, zone: c.zone,\n    members: c.members || 0, max_size: c.max_size || 5,\n    needed_roles: c.needed_roles || [],\n    fit: Math.round(score * 100),\n    factors: {\n      interest: Math.round(interest * 100) / 100,\n      role: Math.round(rf.score * 100) / 100,\n      avail: Math.round(avail * 100) / 100,\n    },\n    matched_role: rf.matched,\n    matched_skills: [],\n    score,\n  };\n});\n\nscored.sort((a, b) => b.score - a.score);\n\n// MMR diversify\nconst picked = [];\nconst remaining = [...scored];\nwhile (picked.length < limit && remaining.length > 0) {\n  for (const r of remaining) {\n    let cp = 0;\n    for (const p of picked) {\n      if (p.challenge && r.challenge && p.challenge.toLowerCase() === r.challenge.toLowerCase()) cp += 0.1;\n    }\n    r._adj = r.score - cp;\n  }\n  remaining.sort((a, b) => b._adj - a._adj);\n  const best = remaining.shift();\n  if (best) { delete best._adj; picked.push(best); }\n}\n\nreturn [{ json: { profile, results: picked, candidateCount: candidates.length, weights } }];"
+      },
+      "id": "rerank",
+      "name": "Re-rank & diversify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1980, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Write one short friendly sentence per team (max 25 words) explaining why it fits this participant. Use ONLY the provided factors and fields. Mention the strongest 1-2 factors. Never invent skills, people or facts. Return ONLY valid JSON array: [{\\\"id\\\": \\\"...\\\", \\\"reason\\\": \\\"...\\\"}]\\n\\nParticipant profile: {{ JSON.stringify($json.profile) }}\\n\\nTeams:\\n{{ JSON.stringify($json.results.map(r => ({id: r.id, name: r.name, challenge: r.challenge, needed_roles: r.needed_roles, factors: r.factors, matched_role: r.matched_role}))) }}\"\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0.4,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "llm-explain",
+      "name": "LLM: explain",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2200, 300],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpQueryAuth": { "id": "", "name": "Gemini API Key" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Attach LLM reasons to result cards, with fallback\nconst reranked = $('Re-rank & diversify').first().json;\nconst llmOutput = $input.first().json;\n\nlet reasons = [];\ntry {\n  let text = '';\n  if (llmOutput.candidates && llmOutput.candidates[0]) {\n    text = llmOutput.candidates[0].content.parts[0].text;\n  }\n  text = text.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  reasons = JSON.parse(text);\n  if (!Array.isArray(reasons)) reasons = [];\n} catch (e) {\n  reasons = [];\n}\n\nconst reasonMap = new Map(reasons.map(r => [r.id, r.reason]));\n\nconst results = reranked.results.map(card => {\n  let reason = reasonMap.get(card.id);\n  if (!reason || reason.length > 150) {\n    // Template fallback\n    const parts = [];\n    if (card.matched_role) parts.push(`You'd fill their ${card.matched_role} role`);\n    if (card.factors.interest >= 0.6) parts.push(`shared interests in ${card.challenge || 'this area'}`);\n    reason = parts.length > 0 ? parts.join(', and ') + '.' : `This team could use your skills.`;\n  }\n  return { ...card, reason };\n});\n\n// Remove internal fields\nconst cleaned = results.map(({ score, matched_skills, ...rest }) => rest);\n\nconst startTime = $('Webhook: match-teams').first().json.headers?.['x-start-time'];\nconst ms = startTime ? Date.now() - parseInt(startTime) : 0;\n\nreturn [{ json: {\n  profile: reranked.profile,\n  results: cleaned,\n  meta: {\n    candidates: reranked.candidateCount,\n    weights: reranked.weights,\n    ms,\n    fallback: false\n  }\n} }];"
+      },
+      "id": "attach-reasons",
+      "name": "Attach reasons",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2420, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [{ "name": "Content-Type", "value": "application/json" }]
+          }
+        }
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2640, 300]
+    },
+    {
+      "parameters": {
+        "content": "## 1 UNDERSTAND\nValidate input, extract profile via LLM,\nparse/repair JSON, normalise roles",
+        "width": 640,
+        "height": 120
+      },
+      "id": "sticky-1",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [0, 140]
+    },
+    {
+      "parameters": {
+        "content": "## 2 RETRIEVE\nBuild query text, embed via Gemini,\nhybrid search in Supabase (FTS + vector, RRF)",
+        "width": 620,
+        "height": 120
+      },
+      "id": "sticky-2",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1100, 140]
+    },
+    {
+      "parameters": {
+        "content": "## 3 RANK\nRe-rank by role fit, interest, availability.\nMMR diversify across challenges.",
+        "width": 300,
+        "height": 120
+      },
+      "id": "sticky-3",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1870, 140]
+    },
+    {
+      "parameters": {
+        "content": "## 4 EXPLAIN\nLLM writes friendly 25-word reasons.\nAttach to cards, fallback template if LLM fails.",
+        "width": 520,
+        "height": 120
+      },
+      "id": "sticky-4",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [2200, 140]
+    }
+  ],
+  "connections": {
+    "Webhook: match-teams": { "main": [[{ "node": "Validate input", "type": "main", "index": 0 }]] },
+    "Validate input": { "main": [[{ "node": "Has profile?", "type": "main", "index": 0 }]] },
+    "Has profile?": {
+      "main": [
+        [{ "node": "Build query", "type": "main", "index": 0 }],
+        [{ "node": "LLM: extract profile", "type": "main", "index": 0 }]
+      ]
+    },
+    "LLM: extract profile": { "main": [[{ "node": "Parse & repair profile", "type": "main", "index": 0 }]] },
+    "Parse & repair profile": { "main": [[{ "node": "Build query", "type": "main", "index": 0 }]] },
+    "Build query": { "main": [[{ "node": "Embed query", "type": "main", "index": 0 }]] },
+    "Embed query": { "main": [[{ "node": "Supabase: hybrid_search", "type": "main", "index": 0 }]] },
+    "Supabase: hybrid_search": { "main": [[{ "node": "Re-rank & diversify", "type": "main", "index": 0 }]] },
+    "Re-rank & diversify": { "main": [[{ "node": "LLM: explain", "type": "main", "index": 0 }]] },
+    "LLM: explain": { "main": [[{ "node": "Attach reasons", "type": "main", "index": 0 }]] },
+    "Attach reasons": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1
+}

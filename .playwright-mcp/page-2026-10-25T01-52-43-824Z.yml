@@ -1,0 +1,68 @@
+- generic [ref=f1e127]:
+  - navigation [ref=f1e128]:
+    - generic [ref=f1e129]:
+      - link "0% CONET" [ref=f1e130] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f1e131]: 0%
+        - generic [ref=f1e132]: CONET
+      - link "Home" [ref=f1e133] [cursor=pointer]:
+        - /url: /
+      - link "Find my match" [ref=f1e134] [cursor=pointer]:
+        - /url: /match
+      - link "Team map" [ref=f1e135] [cursor=pointer]:
+        - /url: /map/teams
+      - link "Mentor map" [ref=f1e136] [cursor=pointer]:
+        - /url: /map/mentors
+      - link "My team" [ref=f1e137] [cursor=pointer]:
+        - /url: /team
+      - generic [ref=f1e138]:
+        - button "0 invitations" [ref=f1e139] [cursor=pointer]
+        - button "A Aleksi" [ref=f1e144] [cursor=pointer]:
+          - generic [ref=f1e145]: A
+          - generic [ref=f1e146]: Aleksi
+  - main [ref=f1e147]:
+    - generic [ref=f1e148]:
+      - generic [ref=f1e150]:
+        - button "> IMPORT CV / PROFILE" [ref=f1e151] [cursor=pointer]
+        - generic [ref=f1e152]: Upload a CV or paste a link
+      - generic [ref=f1e155]:
+        - generic [ref=f1e156]:
+          - generic [ref=f1e157]:
+            - generic [ref=f1e158]:
+              - generic [ref=f1e159]: AI MATCHMAKER
+              - generic [ref=f1e160]: Hi! Tell me your idea, the skills you bring, and the role you want to play.
+            - generic [ref=f1e180]:
+              - generic [ref=f1e181]: YOU
+              - generic [ref=f1e182]: I'm a frontend dev with Figma skills, interested in frontend
+            - generic [ref=f1e183]:
+              - generic [ref=f1e184]: AI MATCHMAKER
+              - generic [ref=f1e185]:
+                - text: "Here's what I picked up:"
+                - generic [ref=f1e186]:
+                  - generic [ref=f1e187]: "IDEA:"
+                  - generic [ref=f1e188]:
+                    - text: "SKILLS:"
+                    - generic [ref=f1e190] [cursor=pointer]:
+                      - text: figma
+                      - generic [ref=f1e191]: x
+                  - generic [ref=f1e192]:
+                    - text: "ROLE:"
+                    - generic [ref=f1e193] [cursor=pointer]:
+                      - text: frontend developer
+                      - generic [ref=f1e194]: x
+                  - generic [ref=f1e195]:
+                    - text: "INTERESTS:"
+                    - generic [ref=f1e197] [cursor=pointer]:
+                      - text: frontend
+                      - generic [ref=f1e198]: x
+          - generic [ref=f1e165]:
+            - textbox "Tell me about yourself..." [ref=f1e166]
+            - button "SEND" [active] [ref=f1e167]
+        - generic [ref=f1e169]:
+          - generic [ref=f1e170]:
+            - button "TEAMS 0" [ref=f1e199] [cursor=pointer]
+            - button "PEOPLE" [ref=f1e172] [cursor=pointer]
+          - combobox [ref=f1e173] [cursor=pointer]:
+            - option "Best fit" [selected]
+            - option "Newest"
+            - option "Most members"
